@@ -45,10 +45,10 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
-    
+        const { email, password ,role} = req.body;
+      console.log("Login request body:", req.body); // Log the request body for debugging
         // Check if email and password are provided
-        if (!email || !password) {
+        if (!email || !password || !role) {
           return res.status(400).json({ message: 'All fields are required' });
         }
     
@@ -92,8 +92,8 @@ export const loginUser = async (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
-        const userId = req.params.id;
-        const user = await User.findById(userId);
+        const {id} = req.params;
+        const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

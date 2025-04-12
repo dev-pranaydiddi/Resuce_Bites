@@ -40,7 +40,19 @@ const UserSchema = new Schema({
                 long: Number,
             }
         }
-    }
+    },
+    donation: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Donation'
+    }],
+    delivery: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Delivery'
+    }],
+    request: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Request'
+    }]
 }, { timestamps: true });
 
 export const User = mongoose.model("User", UserSchema);

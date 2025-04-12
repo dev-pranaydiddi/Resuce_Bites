@@ -6,7 +6,7 @@ import { Request } from '../models/request.model.js';
 import mongoose from 'mongoose';
 import { createDonation, getDonation, getDonations, getDonationsByUser, deleteDonation, updateDonation } from'../controllers/donation.controller.js';
 
-router.route('/').get(getDonation);
+router.route('/:donationId').get(getDonation);
 router.route('/all').get(getDonations);
 router.route('/:userId/new').post(createDonation);
 router.route('/:userId').get(getDonationsByUser);

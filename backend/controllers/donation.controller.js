@@ -8,8 +8,13 @@ export const createDonation = async (req, res) => {
         if (!foodType || !quantity || !pickupAddress || !pickupTime || !pickupLocationName || !expiryTime || !status || !donor || !recipient || !delivery || !request || !description) {
             return res.status(400).json({ message: 'Please provide all the required fields', success: false });
         }
+
         const donation = await Donation.create({ foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, donor, recipient, delivery, request, description });
-        const user = await getUser(req, res);
+        const user = await getUser(donor);
+        user.donation.push(donation._id);
+        donation.donor = user._id;
+        await donation.save();
+        await user.save();
         res.status(201).json({ message: 'Donation created successfully', success: true, donation: donation, user: user });
     } catch (err) {
         console.error('Error creating donation:', err);
@@ -19,7 +24,7 @@ export const createDonation = async (req, res) => {
 export const getDonationsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const donations = await Donation.find({ donor: userId }).sort({ createdAt: -1 }).populate('recipient').populate('request').populate('delivery').populate('donor');
+        const donations = await User.findById(userId).populate('donation').populate('delivery').populate('request');
         if (!donations || donations.length === 0) {
             return res.status(404).json({ message: 'No donations found at this time.', success: false });
         }
@@ -47,7 +52,7 @@ export const getDonations = async (req, res) => {
 
 export const getDonation = async (req, res) => {
     try {
-        const donationId = req.params.id;
+        const {donationId} = req.params;
         const donation = await Donation.findById(donationId).populate('recipient').populate('request').populate('delivery').populate('donor');
         if (!donation) {
             return res.status(404).json({ message: 'Donation not found.', success: false });
