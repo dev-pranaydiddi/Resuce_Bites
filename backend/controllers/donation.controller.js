@@ -1,25 +1,37 @@
-import {Donation} from '../models/donation.model.js';
-import {User} from '../models/user.model.js';
+import { Donation } from '../models/donation.model.js';
+import { User } from '../models/user.model.js';
 import { getUser } from './user.controller.js';
-
 export const createDonation = async (req, res) => {
     try {
-        const { foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, donor, recipient, delivery, request, description } = req.body;
-        if (!foodType || !quantity || !pickupAddress || !pickupTime || !pickupLocationName || !expiryTime || !status || !donor || !recipient || !delivery || !request || !description) {
-            return res.status(400).json({ message: 'Please provide all the required fields', success: false });
-        }
-
-        const donation = await Donation.create({ foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, donor, recipient, delivery, request, description });
-        const user = await getUser(donor);
-        user.donation.push(donation._id);
-        donation.donor = user._id;
-        await donation.save();
-        await user.save();
-        res.status(201).json({ message: 'Donation created successfully', success: true, donation: donation, user: user });
+      const { foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, description } = req.body;
+      
+      // Check required fields
+      if (!foodType || !quantity || !pickupAddress || !pickupTime || !pickupLocationName || !expiryTime || !status || !description) {
+        return res.status(400).json({ message: "Please provide all the required fields", success: false });
+      }
+  
+      // Get the donor's ID from the authenticated request (make sure your authentication middleware sets req.id)
+      const donor = req.id;
+      console.log("Donor ID:", donor);
+  
+      // Create a new Donation document using your Donation model
+      const donation = new Donation({ foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, description, donor });
+      const savedDonation = await donation.save();
+  
+      // Find the user using the helper function and update their donation array
+      const user = await User.findById(donor);
+      
+      // Assumes that the User model has a donation field (an array) defined
+      user.donation.push(savedDonation._id);
+      await user.save();
+  
+      // Respond with success
+      res.status(201).json({ message: "Donation created successfully", success: true, donation: savedDonation, user });
     } catch (err) {
-        console.error('Error creating donation:', err);
+      console.error("Error creating donation:", err);
+      res.status(500).json({ message: "Server error", error: err.message });
     }
-};
+  };
 
 export const getDonationsByUser = async (req, res) => {
     try {
@@ -52,8 +64,10 @@ export const getDonations = async (req, res) => {
 
 export const getDonation = async (req, res) => {
     try {
-        const {donationId} = req.params;
+        const { donationId } = req.params;
+        console.log("Donation ID:", donationId);
         const donation = await Donation.findById(donationId).populate('recipient').populate('request').populate('delivery').populate('donor');
+        console.log("Donation:", donation);
         if (!donation) {
             return res.status(404).json({ message: 'Donation not found.', success: false });
         }

@@ -1,25 +1,50 @@
 import jwt from "jsonwebtoken";
 
-const isAuthenticated = async (req, res, next) => {
+const isAuthenticated = (req, res, next) => {
+    // Retrieve token from cookies
+    let token = req.cookies.token;
+
+    // If token not found in cookies, optionally check the 'Authorization' header.
+    if (!token && req.headers.authorization) {
+        token = req.headers.authorization;
+    }
+
+    if (!token) {
+        return res.status(401).json({
+            message: "User not authenticated",
+            success: false,
+        });
+    }
+
+    // If token is prefixed with 'Bearer ', remove the prefix.
+    if (token.startsWith("Bearer ")) {
+        token = token.slice(7).trim();
+    }
+
     try {
-        const token = req.cookies.token;
-        if (!token) {
-            return res.status(401).json({
-                message: "User not authenticated",
+        const secretKey = process.env.SECRET_KEY;
+        if (!secretKey) {
+            return res.status(500).json({
+                message: "Server configuration error: SECRET_KEY is not set",
                 success: false,
-            })
+            });
         }
-        const decode = await jwt.verify(token, process.env.SECRET_KEY);
-        if(!decode){
-            return res.status(401).json({
-                message:"Invalid token",
-                success:false
-            })
-        };
-        req.id = decode.userId;
+        console.log("Using secret key:", secretKey); // Debug logging
+
+        // Verify the token using the secret key
+        const decoded = jwt.verify(token, secretKey);
+        req.id = decoded.id;
+        console.log("secret key", secretKey);
+        console.log("User ID from token:", req.id); // Debug logging
         next();
     } catch (error) {
-        console.log(error);
+        console.error("Token verification error:", error.message);
+        return res.status(401).json({
+            message: "Invalid token",
+            success: false,
+            error: error.message,
+        });
     }
-}
+};
+
 export default isAuthenticated;
