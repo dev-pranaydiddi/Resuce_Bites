@@ -23,6 +23,7 @@ const PORT = process.env.PORT;
 app.use('/rescue_bites/user', userRoutes);
 app.use('/rescue_bites/request', requestRoutes);
 app.use('/rescue_bites/donation', donationRoutes);
+app.use('/rescue_bites/delivery', deliveryRoutes);
 
 
 // const sessionOptions = {
