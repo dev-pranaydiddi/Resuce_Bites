@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const Delivery = require('../models/delivery.model');
-const User = require('../models/User');
-const Request = require('../models/Request');
-const mongoose = require('mongoose');
+import {Delivery} from '../models/delivery.model.js';
+import { User } from '../models/user.model.js';
+import { Request } from '../models/request.model.js';
+import mongoose from 'mongoose';
 
 router.get('/', async (req, res) => {
     try {
@@ -138,4 +138,4 @@ router.delete('/delivery/request/:id', async (req, res) => {
     }
 });     
 
-module.exports = router;
+export default router;

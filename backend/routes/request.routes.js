@@ -1,7 +1,7 @@
 import express from 'express';
-import Request from '../models/Request.js';
-import User from '../models/User.js';
-import { createRequest, getRequest, getRequestsByUser } from '../controllers/request.controller.js';
+import {Request} from '../models/request.model.js';
+import {User} from '../models/user.model.js';
+import { createRequest, deleteRequest, getRequest, getRequestsByRecipient, getRequestsByUser, updateRequest } from '../controllers/request.controller.js';
 
 
 const router = express.Router();

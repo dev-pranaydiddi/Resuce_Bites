@@ -12,4 +12,5 @@ router.route('/login').post(loginUser);
 router.route('/logout').get(logoutUser);
 router.route('/users').get(getUsers);
 router.route('/:id').get( getUser);
+
 export default router;

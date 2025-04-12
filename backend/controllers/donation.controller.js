@@ -1,5 +1,5 @@
-import Donation from '../models/donation.model.js';
-import User from '../models/user.model.js';
+import {Donation} from '../models/donation.model.js';
+import {User} from '../models/user.model.js';
 import { getUser } from './user.controller.js';
 
 export const createDonation = async (req, res) => {

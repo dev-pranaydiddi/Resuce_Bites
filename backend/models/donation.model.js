@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const DonationSchema = new Schema({
@@ -96,6 +96,5 @@ const DonationSchema = new Schema({
 );
 
 // enable geospatial queries
-DonationSchema.index({ pickupAddress: '2dsphere' });
-
-module.exports = mongoose.model('Donation', DonationSchema);
+// DonationSchema.index({ pickupAddress: '2dsphere' });
+export const Donation = mongoose.model('Donation', DonationSchema);

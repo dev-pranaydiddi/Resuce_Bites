@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const DeliverySchema = new Schema(
@@ -27,4 +27,4 @@ const DeliverySchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Delivery", DeliverySchema);
+export const Delivery = mongoose.model("Delivery", DeliverySchema);
