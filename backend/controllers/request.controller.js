@@ -1,3 +1,4 @@
+import { UNSAFE_getSingleFetchDataStrategy } from 'react-router';
 import {Request} from '../models/request.model.js';
 import {User} from '../models/user.model.js';
 
