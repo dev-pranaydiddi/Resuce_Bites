@@ -2,7 +2,13 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const DonationSchema = new Schema({
-    foodType: {type: String,
+    name:{
+        type: String,
+        required: true,
+        trim: true
+    },
+    foodType: {
+        type: String,
             required: true,
             enum: ['FRUIT', 'VEGETABLE', 'DAIRY','BAKED_GOODS', 'MEAT', 'OTHERS']},
     quantity: {

@@ -7,17 +7,17 @@ const RequestSchema = new Schema({
             type: {
                 type: String,
                 enum: ['Point'],
-                required: true
+                // required: true
             },
             coordinates: {
                 type: [Number],
-                required: true,
+                // required: true,
                 index: '2dsphere'
             }
         },
         location: {
             type: String,
-            required: true,
+            // required: true,
             trim: true
         }
     },
@@ -27,7 +27,7 @@ const RequestSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['PENDING','NETWORK_ERROR', 'APPROVED', 'REJECTED', 'FULFILLED'],
+        enum: ['PENDING', 'NETWORK_ERROR', 'APPROVED' , 'FULFILLED'],
         required: true,
         default: 'PENDING'
     },
@@ -37,10 +37,14 @@ const RequestSchema = new Schema({
         required: true,
         unique: true
     },
+    delivery: {
+        type: Schema.Types.ObjectId,
+        ref: 'Delivery'
+    },
     recipient: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        // required: true,
         unique: true
     }
 }, { timestamps: true });

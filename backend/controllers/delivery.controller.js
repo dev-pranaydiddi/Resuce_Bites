@@ -46,6 +46,7 @@ export const getDeliveries = async (req, res) => {
 }
 
 export const getDelivery = async (req, res) => {
+    
     try {
         const deliveryId = req.params.id;
         const delivery = await Delivery.findById(deliveryId).populate('recipient').populate('request');
@@ -54,6 +55,7 @@ export const getDelivery = async (req, res) => {
         }
         res.status(200).json({ message: 'Delivery retrieved successfully', success: true, delivery: delivery });
     }
+
     catch (error) {
         console.error('Error retrieving delivery:', error);
         // res.status(500).json({ message: 'Error retrieving delivery', success: false });
@@ -67,13 +69,31 @@ export const updateDelivery = async (req, res) => {
         if (!id || !pickupAddress || !pickupLocationName || !pickupTime || !expiryTime || !status || !donor || !recipient || !request || !description) {
             return res.status(400).json({ message: 'Please provide all the required fields' });
         }
+        if (user.role === 'VOLUNTEER')
+            return res.status(403).json({ message: 'You are not authorized to update this delivery', success: false });
+
         const delivery = await Delivery.findById(id);
+
         if (!delivery) {
             return res.status(404).json({ message: 'Delivery not found', success: false });
         }
+
+        if (status === 'DELIVERED') {
+            const request = await Request.findById(delivery.request);
+            request.status = 'APPROVED';
+            // donation status to be updated to DELIVERED
+            const donation = await Donation.findById(request.donation);
+            donation.status = 'DELIVERED';
+            // update the donation's delivery to the deliver's volunteer id
+            donation.delivery = req.id;
+            await donation.save();
+            await request.save();
+        }
+
         const updatedDelivery = await Delivery.findByIdAndUpdate(id, { pickupAddress, pickupLocationName, pickupTime, expiryTime, status, donor, recipient, request, description });
         res.status(200).json({ message: 'Delivery updated successfully', success: true, delivery: updatedDelivery });
     }
+
     catch (error) {
         console.error('Error updating delivery:', error);
         res.status(500).json({ message: 'Error updating delivery', success: false });

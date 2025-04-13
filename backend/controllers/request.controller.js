@@ -3,20 +3,6 @@ import {Request} from '../models/request.model.js';
 import {User} from '../models/user.model.js';
 
 
-export const createRequest = async (req, res) => {
-    try {
-        const { deliveryAddress, notes, status, donation, recipient } = req.body;
-        if (!deliveryAddress.loacation || !notes || !status || !donation || !recipient) {
-            return res.status(400).json({ message: 'Please provide all the required fields', success: false });
-        }
-        // mention 1min                 
-        const request = await Request.create({ deliveryAddress, notes, status, donation, recipient,user });          
-        res.status(201).json({ message: 'Request created successfully', success: true, request: request });
-    } catch (error) {
-        console.error('Error creating request:', error);
-    }
-};
-
 export const getRequest = async (req, res) => {
     try {
         const requestId = req.params.id;

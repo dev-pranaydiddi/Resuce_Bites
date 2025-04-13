@@ -8,11 +8,11 @@ import { createDonation, getDonation, getDonations, getDonationsByUser, deleteDo
 import isAuthenticated from '../middlewares/isAuthenticated.js';
 
 router.route('/all').get(getDonations);
-router.route('/user/:userId').get(getDonationsByUser);
-router.route('/:donationId').get(getDonation);
+router.route('/user/:userId').get(isAuthenticated,getDonationsByUser);
+router.route('/update/:donationId').put(isAuthenticated,updateDonation);
+router.route('/delete/:donationId').delete(isAuthenticated,deleteDonation);
 router.route('/:userId/new').post(isAuthenticated,createDonation);
-router.route('/:id/update').put(updateDonation);
-router.route('/:id/delete').delete(deleteDonation);
+router.route('/:donationId').get(getDonation);
 
 
 
