@@ -1,15 +1,16 @@
+import e from 'express';
 import Delivery from '../models/delivery.model.js';
 import User from '../models/user.model.js';
 import { getUser } from './user.controller.js';
 
 export const createDelivery = async (req, res) => {
     try {
-        const { pickupAddress, pickupLocationName, pickupTime, expiryTime, status, donor, recipient, request, description } = req.body;
-        if (!pickupAddress || !pickupLocationName || !pickupTime || !expiryTime || !status || !donor || !recipient || !request || !description) {
+        const { pickupAddress, pickupLocationName, pickupTime, expiryTime, status, description } = req.body;
+        if (!pickupAddress || !pickupLocationName || !pickupTime || !expiryTime || !status || !description) {
             return res.status(400).json({ message: 'Please provide all the required fields', success: false });
         }
-        const delivery = await Delivery.create({ pickupAddress, pickupLocationName, pickupTime, expiryTime, status, donor, recipient, request, description });
-        const user = await getUser(req, res);
+        const delivery = new Delivery({ pickupAddress, pickupLocationName, pickupTime, expiryTime, status, description });
+        const user = await User.findById(req.id).populate('donation').populate('delivery').populate('request');
         res.status(201).json({ message: 'Delivery created successfully', success: true, delivery: delivery, user: user });
     } catch (err) {
         console.error('Error creating delivery:', err);
@@ -77,18 +78,26 @@ export const updateDelivery = async (req, res) => {
         if (!delivery) {
             return res.status(404).json({ message: 'Delivery not found', success: false });
         }
+        const currRequest = await Request.findById(delivery.request);
+        const donation = await Donation.findById(currRequest.donation);
 
-        if (status === 'DELIVERED') {
-            const request = await Request.findById(delivery.request);
-            request.status = 'APPROVED';
+        if (status === 'ACCEPTED' && user.role === 'VOLUNTEER') {
+
+        }
+        else if (status === 'PICKED_UP' && user.role === 'VOLUNTEER') {
+            delivery.status = status;
+            await donation.save();
+        }
+        else if (status === 'DELIVERED'&& user.role === 'VOLUNTEER') {
+            delivery.status = status;
             // donation status to be updated to DELIVERED
-            const donation = await Donation.findById(request.donation);
             donation.status = 'DELIVERED';
+            currRequest.status = 'FULFILLED';
             // update the donation's delivery to the deliver's volunteer id
             donation.delivery = req.id;
             await donation.save();
-            await request.save();
-        }
+            await currRequest.save();
+        } 
 
         const updatedDelivery = await Delivery.findByIdAndUpdate(id, { pickupAddress, pickupLocationName, pickupTime, expiryTime, status, donor, recipient, request, description });
         res.status(200).json({ message: 'Delivery updated successfully', success: true, delivery: updatedDelivery });

@@ -21,15 +21,16 @@ const RequestSchema = new Schema({
             trim: true
         }
     },
-    notes: {
-        type: String,
-        default: ''
-    },
     status: {
         type: String,
-        enum: ['PENDING', 'NETWORK_ERROR', 'APPROVED' , 'FULFILLED'],
+        enum: ['PENDING', 'ACCEPTED' ,'FULFILLED'],
         required: true,
         default: 'PENDING'
+    },
+    donor: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     },
     donation: {
         type: Schema.Types.ObjectId,
@@ -44,7 +45,6 @@ const RequestSchema = new Schema({
     recipient: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        // required: true,
         unique: true
     }
 }, { timestamps: true });

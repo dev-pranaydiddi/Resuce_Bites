@@ -1,4 +1,5 @@
 import { Donation } from '../models/donation.model.js';
+import { Request } from '../models/request.model.js';
 import { User } from '../models/user.model.js';
 import { getUser } from './user.controller.js';
 export const createDonation = async (req, res) => {
@@ -31,22 +32,21 @@ export const createDonation = async (req, res) => {
 
 
         // Create a new Donation document using your Donation model
-        let donation = new Donation({ name, foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, description, donor });
-        if (donation) {
+        const donation = new Donation({ name, foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, description, donor });
+        console.log("Donation:", donation);
+        if (donation && user.role === 'DONOR') {
             // create a new request using the request model
-            const request = new Request({ donation: donation._id, recipient: null, status: 'PENDING' });
+            const request = new Request({ donation: donation._id, donor: user._id, status: 'PENDING' });
+            donation.request = request._id;
+            user.donation.push(donation._id);
             await request.save();
+            await donation.save();
+            await user.save();
         }
-        // donation.request = request._id;
-        // update the donation with the request id
-        // // Find the user using the helper function and update their donation array
-        // // Assumes that the User model has a donation field (an array) defined
-        // if (user.role === 'DONOR')
-        //     user.donation.push(donation._id);
-        // // await donation.save();
-        // await user.save();
-
-        // // Respond with success
+        else {
+            return res.status(403).json({ message: "You are not authorized to create a donation", success: false });
+        }
+        // Respond with success
         res.status(201).json({ message: "Donation created successfully", success: true, donation: donation, user });
     } catch (err) {
         console.error("Error creating donation:", err);
@@ -135,7 +135,6 @@ export const deleteDonation = async (req, res) => {
         const user = await User.findById(id);
         user.donation.pull(donationId);
         await user.save();
-        console.log(user.donation);
         if (!donation) {
             return res.status(404).json({ message: 'Donation not found', success: false });
         }

@@ -7,10 +7,10 @@ import { deleteRequest, getRequest, getRequestsByRecipient, getRequestsByUser, u
 const router = express.Router();
 
 
-router.route('/update').post(updateRequest);
-router.route('/delete').get(deleteRequest);
 router.route('/users').get(getRequest);
-router.route('/:id').get( getRequestsByUser);
-router.route('/:id/recipient').get(getRequestsByRecipient);
+router.route('/recipient/:recipientId').get(getRequestsByRecipient);
+router.route('/update/:requestId').post(updateRequest);
+router.route('/delete/:requestId').get(deleteRequest);
+router.route('/:userId').get( getRequestsByUser);
 
-export default router;  
+export default router;

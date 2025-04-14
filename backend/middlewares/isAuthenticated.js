@@ -29,13 +29,10 @@ const isAuthenticated = (req, res, next) => {
                 success: false,
             });
         }
-        console.log("Using secret key:", secretKey); // Debug logging
 
         // Verify the token using the secret key
         const decoded = jwt.verify(token, secretKey);
-        req.id = decoded.id;
-        console.log("secret key", secretKey);
-        console.log("User ID from token:", req.id); // Debug logging
+        req.id = decoded.id; // Debug logging
         next();
     } catch (error) {
         console.error("Token verification error:", error.message);

@@ -25,7 +25,6 @@ export const registerUser = async (req, res) => {
 
     // Create a token for the user using jwt.sign
     const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
-    console.log("token", token);
 
     // Set the token in the cookie
     res.cookie("token", token, {
@@ -44,8 +43,7 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
-    console.log("Login request body:", req.body); // Log the request body for debugging
+    const { email, password, role } = req.body; // Log the request body for debugging
     // Check if email and password are provided
     if (!email || !password || !role) {
       return res.status(400).json({ message: 'All fields are required' });
@@ -58,14 +56,11 @@ export const loginUser = async (req, res) => {
     }
 
     // Log the password and the hash to check them
-    console.log("Password from request:", password);
-    console.log("Hashed password from DB:", user.password);
 
     // Compare the password with the hashed password in the database
 
     //const hash = await bcrypt.hash(password, 10);
-    const auth = await bcrypt.compare(password, user.password);
-    console.log('Password match result:', auth); // This will tell if it's matching or not
+    const auth = await bcrypt.compare(password, user.password);// This will tell if it's matching or not
     if (!auth) {
       return res.status(400).json({ message: 'Incorrect password' });
     }
@@ -92,7 +87,6 @@ export const loginUser = async (req, res) => {
 export const getUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log("User ID from request: in user.controller", userId);
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });

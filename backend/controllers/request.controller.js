@@ -1,4 +1,3 @@
-import { UNSAFE_getSingleFetchDataStrategy } from 'react-router';
 import {Request} from '../models/request.model.js';
 import {User} from '../models/user.model.js';
 
@@ -21,7 +20,7 @@ export const getRequest = async (req, res) => {
 export const getRequestsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const requests = await Request.find({ donor: userId }).sort({ createdAt: -1 }).populate({
+        const requests = await Request.find({ user: userId }).sort({ createdAt: -1 }).populate({
             path: 'donation',
             populate: {
                 path: 'donor'
@@ -60,7 +59,7 @@ export const getRequestsByRecipient = async (req, res) => {
 export const updateRequest = async (req, res) => {
     try {
         const { id } = req.params;
-        const { foodType, quantity, location, description } = req.body;
+        const { deliveryAddress, status , } = req.body;
         if (!id || !foodType || !quantity || !location || !description) {
             return res.status(400).json({ message: 'Please provide all the required fields' });
         }
@@ -68,7 +67,26 @@ export const updateRequest = async (req, res) => {
         if (!request) {
             return res.status(404).json({ message: 'Request not found', success: false });
         }
-        const updatedRequest = await Request.findByIdAndUpdate(id, { foodType, quantity, location, description });
+        const user = await User.findById(req.id);
+        if(!user) {
+            return res.status(404).json({ message: 'User not found', success: false }); }
+        if(user.role === 'RECIPIENT' && status === 'PENDING') {
+            request.status = 'ACCEPTED';
+            request.recipient = req.id;
+            user.requests.push(request._id);
+            await user.save();
+        }
+        if(request.foodType !== foodType) request.foodType = foodType;
+        if(request.quantity !== quantity) request.quantity = quantity;
+        if(request.location !== location) request.location = location;
+        if(request.description !== description) request.description = description;
+
+        await request.save();
+
+        const updatedRequest = await Request.findById(id).populate('donation').populate('recipient').populate('donor');
+        if (!updatedRequest) {
+            return res.status(404).json({ message: 'Request not found', success: false });
+        }
         res.status(200).json({ message: 'Request updated successfully', success: true, request: updatedRequest });
     }
     catch (error) {
@@ -79,7 +97,7 @@ export const updateRequest = async (req, res) => {
 
 export const deleteRequest = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { requestId } = req.params;
         if (!id) {
             return res.status(400).json({ message: 'Please provide a valid id' });
         }

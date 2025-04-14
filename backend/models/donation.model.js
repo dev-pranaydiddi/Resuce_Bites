@@ -83,6 +83,10 @@ const DonationSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Request'
     },
+    volunteer: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
     description: {
         Notes: {
             type: String,
