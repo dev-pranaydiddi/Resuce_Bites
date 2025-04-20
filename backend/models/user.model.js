@@ -35,7 +35,7 @@ const UserSchema = new Schema({
         zip: String,
         country: { type: String, default: 'USA' },
         Geolocation: {
-            coordinates:{
+            coordinates: {
                 lat: Number,
                 long: Number,
             }

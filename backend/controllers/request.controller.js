@@ -1,5 +1,6 @@
-import {Request} from '../models/request.model.js';
-import {User} from '../models/user.model.js';
+import { request } from 'express';
+import { Request } from '../models/request.model.js';
+import { User } from '../models/user.model.js';
 
 
 export const getRequest = async (req, res) => {
@@ -29,6 +30,8 @@ export const getRequestsByUser = async (req, res) => {
         if (!requests || requests.length === 0) {
             return res.status(404).json({ message: 'No requests found at this time.', success: false });
         }
+        const activeRequests = requests.filter(request => request.active === true);
+        const inactiveRequests = requests.filter(request => request.active === false);
         res.status(200).json({ message: 'Requests retrieved successfully', success: true, requests: requests });
     }
     catch (error) {
@@ -59,30 +62,32 @@ export const getRequestsByRecipient = async (req, res) => {
 export const updateRequest = async (req, res) => {
     try {
         const { id } = req.params;
-        const { deliveryAddress, status , } = req.body;
-        if (!id || !foodType || !quantity || !location || !description) {
-            return res.status(400).json({ message: 'Please provide all the required fields' });
-        }
+        const { deliveryAddress,active,status,} = req.body;
         const request = await Request.findById(id);
         if (!request) {
             return res.status(404).json({ message: 'Request not found', success: false });
         }
         const user = await User.findById(req.id);
-        if(!user) {
-            return res.status(404).json({ message: 'User not found', success: false }); }
-        if(user.role === 'RECIPIENT' && status === 'PENDING') {
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
+        }
+        if (user.role === 'RECIPIENT' && body.status === 'PENDING' && request.active === true && active) {
             request.status = 'ACCEPTED';
             request.recipient = req.id;
             user.requests.push(request._id);
             await user.save();
         }
-        if(request.foodType !== foodType) request.foodType = foodType;
-        if(request.quantity !== quantity) request.quantity = quantity;
-        if(request.location !== location) request.location = location;
-        if(request.description !== description) request.description = description;
+        else if (user.role === 'DONOR' && request.status === 'PENDING' && request.active === true && !active)
+            request.active = false;
+        else if (user.role === 'DONOR' && body.status === 'PENDING' && request.active === false && active)
+            request.active = true;
 
+        //update the request with the new data which is passed in the body of the request
+        if(user.role === 'RECIPIENT' && request.active === true && status === 'ACCEPTED'){
+        request.deliveryAddress = deliveryAddress;
+        }
         await request.save();
-
+        
         const updatedRequest = await Request.findById(id).populate('donation').populate('recipient').populate('donor');
         if (!updatedRequest) {
             return res.status(404).json({ message: 'Request not found', success: false });
@@ -98,13 +103,26 @@ export const updateRequest = async (req, res) => {
 export const deleteRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
-        if (!id) {
+        if (!requestId) {
             return res.status(400).json({ message: 'Please provide a valid id' });
         }
-        const request = await Request.findByIdAndDelete(id);
+        const user = await User.findById(req.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
+        }
+        const existRequest = await Request.findById(requestId);
+        const existdonation = await Donation.findById(existRequest.donation);
+        if (user.role === 'DONOR' && existRequest.active && existRequest.status === 'PENDING') {
+            user.requests.pull(requestId);
+            existdonation.request = null;
+        }
+        await user.save();   
+        await existdonation.save();
+        const request = await Request.findByIdAndDelete(requestId);
         if (!request) {
             return res.status(404).json({ message: 'Request not found', success: false });
         }
+        await request.save();
         res.status(200).json({ message: 'Request deleted successfully', success: true, request: request });
     }
     catch (error) {

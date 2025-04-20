@@ -36,7 +36,7 @@ export const createDonation = async (req, res) => {
         console.log("Donation:", donation);
         if (donation && user.role === 'DONOR') {
             // create a new request using the request model
-            const request = new Request({ donation: donation._id, donor: user._id, status: 'PENDING' });
+            const request = new Request({ donation: donation._id, donor: user._id, status: 'PENDING',active: true });
             donation.request = request._id;
             user.donation.push(donation._id);
             await request.save();

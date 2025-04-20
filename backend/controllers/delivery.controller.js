@@ -82,7 +82,7 @@ export const updateDelivery = async (req, res) => {
         const donation = await Donation.findById(currRequest.donation);
 
         if (status === 'ACCEPTED' && user.role === 'VOLUNTEER') {
-
+            
         }
         else if (status === 'PICKED_UP' && user.role === 'VOLUNTEER') {
             delivery.status = status;
