@@ -1,25 +1,20 @@
-import { MapPin, Clock } from "lucide-react";
-import { Donation } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { formatDistanceToNow } from "date-fns";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { MapPin, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { formatDistanceToNow } from 'date-fns';
 
-interface DonationCardProps {
-  donation: Donation;
-  onRequest?: () => void;
-}
-
-const DonationCard = ({ donation, onRequest }: DonationCardProps) => {
+const DonationCard = ({ donation, onRequest }) => {
   const getStatusBadge = () => {
     if (donation.isUrgent) {
       return <span className="badge-urgent">Urgent</span>;
     }
     
-    if (donation.status === "available") {
+    if (donation.status === 'available') {
       return <span className="badge-new">New</span>;
     }
     
-    if (donation.status === "reserved") {
+    if (donation.status === 'reserved') {
       return <span className="badge-verified">Reserved</span>;
     }
     
@@ -30,8 +25,8 @@ const DonationCard = ({ donation, onRequest }: DonationCardProps) => {
     try {
       const date = new Date(donation.createdAt);
       return formatDistanceToNow(date, { addSuffix: true });
-    } catch (e) {
-      return "Recently";
+    } catch {
+      return 'Recently';
     }
   };
 
@@ -61,10 +56,8 @@ const DonationCard = ({ donation, onRequest }: DonationCardProps) => {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <div>
-            <span className="text-sm text-neutral-800 font-semibold">{donation.quantity}</span>
-          </div>
-          {donation.status === "available" && (
+          <span className="text-sm text-neutral-800 font-semibold">{donation.quantity}</span>
+          {donation.status === 'available' && (
             onRequest ? (
               <Button
                 onClick={onRequest}
@@ -74,7 +67,7 @@ const DonationCard = ({ donation, onRequest }: DonationCardProps) => {
                 Request
               </Button>
             ) : (
-              <Link href={`/request?id=${donation.id}`}>
+              <Link to={`/request?id=${donation.id}`}>  
                 <Button
                   size="sm"
                   className="bg-primary hover:bg-[hsl(var(--primary-dark))] text-white rounded-full"

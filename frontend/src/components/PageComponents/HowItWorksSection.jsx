@@ -1,4 +1,5 @@
-import { UserPlus, List, Handshake } from "lucide-react";
+import React from 'react';
+import { UserPlus, List, Handshake } from 'lucide-react';
 
 const HowItWorksSection = () => {
   return (

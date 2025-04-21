@@ -1,5 +1,6 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const CallToAction = () => {
   return (
@@ -12,18 +13,18 @@ const CallToAction = () => {
           Join our community of donors and organizations working together to fight hunger and reduce waste.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/register">
-            <Button 
-              size="lg" 
+          <Link to="/register">
+            <Button
+              size="lg"
               className="bg-white hover:bg-neutral-100 text-[hsl(var(--secondary-dark))] rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
             >
               Sign Up Now
             </Button>
           </Link>
-          <Link href="/how-it-works">
-            <Button 
-              size="lg" 
-              variant="outline" 
+          <Link to="/how-it-works">
+            <Button
+              size="lg"
+              variant="outline"
               className="bg-transparent border-2 border-white text-white hover:bg-white hover:bg-opacity-10 rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
             >
               Learn More
