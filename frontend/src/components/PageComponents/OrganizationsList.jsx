@@ -1,25 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAllOrganizations } from "@/lib/donation-api";
-import OrganizationCard from "./OrganizationCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "wouter";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getAllOrganizations } from '@/lib/donation-api';
+import OrganizationCard from './OrganizationCard';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from 'react-router-dom';
 
-const iconTypes = ["heart", "hands", "home", "utensils"] as const;
+const iconTypes = ['heart', 'hands', 'home', 'utensils'];
 
-interface OrganizationsListProps {
-  limit?: number;
-  showViewAll?: boolean;
-}
-
-const OrganizationsList = ({ limit, showViewAll = false }: OrganizationsListProps) => {
-  const { data: organizations, isLoading } = useQuery({
-    queryKey: ["/api/organizations"],
+const OrganizationsList = ({ limit, showViewAll = false }) => {
+  const { data: organizations = [], isLoading } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: getAllOrganizations,
   });
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {[...Array(limit || 4)].map((_, idx) => (
+        {Array.from({ length: limit || 4 }).map((_, idx) => (
           <div key={idx} className="bg-white p-6 rounded-lg shadow-sm">
             <Skeleton className="w-16 h-16 rounded-full mx-auto mb-3" />
             <Skeleton className="h-5 w-28 mx-auto" />
@@ -29,23 +26,18 @@ const OrganizationsList = ({ limit, showViewAll = false }: OrganizationsListProp
     );
   }
 
-  // Apply limit if provided
-  const displayedOrganizations = limit
-    ? organizations?.slice(0, limit)
-    : organizations || [];
+  const displayed = limit ? organizations.slice(0, limit) : organizations;
 
   return (
     <div>
-      {displayedOrganizations.length === 0 ? (
+      {displayed.length === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-xl font-semibold mb-2">No organizations found</h3>
-          <p className="text-neutral-600">
-            There are currently no partner organizations
-          </p>
+          <p className="text-neutral-600">There are currently no partner organizations</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-          {displayedOrganizations.map((org, idx) => (
+          {displayed.map((org, idx) => (
             <OrganizationCard
               key={org.id}
               organization={org}
@@ -55,10 +47,10 @@ const OrganizationsList = ({ limit, showViewAll = false }: OrganizationsListProp
         </div>
       )}
 
-      {showViewAll && organizations?.length > limit! && (
+      {showViewAll && organizations.length > (limit || 0) && (
         <div className="text-center">
           <Link
-            href="/organizations"
+            to="/organizations"
             className="inline-flex items-center text-[hsl(var(--primary))] font-semibold hover:text-[hsl(var(--primary-dark))] transition-colors"
           >
             View All Partners
@@ -72,8 +64,8 @@ const OrganizationsList = ({ limit, showViewAll = false }: OrganizationsListProp
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
             </svg>
           </Link>
         </div>

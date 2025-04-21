@@ -1,13 +1,9 @@
-import { Testimonial } from "@/types";
+import React from 'react';
 
-interface TestimonialCardProps {
-  testimonial: Testimonial;
-}
-
-const TestimonialCard = ({ testimonial }: TestimonialCardProps) => {
+const TestimonialCard = ({ testimonial }) => {
   // Generate consistent avatar URL based on user's ID
   const avatarUrl = `https://randomuser.me/api/portraits/${
-    testimonial.userId % 2 === 0 ? "women" : "men"
+    testimonial.userId % 2 === 0 ? 'women' : 'men'
   }/${(testimonial.userId * 13) % 100}.jpg`;
 
   return (
@@ -30,16 +26,16 @@ const TestimonialCard = ({ testimonial }: TestimonialCardProps) => {
           <div className="w-12 h-12 rounded-full bg-neutral-200 overflow-hidden mr-4">
             <img
               src={avatarUrl}
-              alt={testimonial.user?.name || "Testimonial author"}
+              alt={testimonial.user?.name || 'Testimonial author'}
               className="w-full h-full object-cover"
             />
           </div>
           <div>
             <h4 className="font-heading font-semibold">
-              {testimonial.user?.name || "Anonymous"}
+              {testimonial.user?.name || 'Anonymous'}
             </h4>
             <p className="text-sm text-neutral-600">
-              {testimonial.userRole || "Community Member"}
+              {testimonial.userRole || 'Community Member'}
             </p>
           </div>
         </div>
