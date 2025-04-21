@@ -5,5 +5,6 @@ import { User } from '../models/user.model.js';
 import { Request } from '../models/request.model.js';
 import mongoose from 'mongoose';
 
-// router.route('/:id/').get()
+
+
 export default router;

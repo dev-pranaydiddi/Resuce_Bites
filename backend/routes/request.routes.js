@@ -10,7 +10,7 @@ const router = express.Router();
 // router.route('/users').get(getRequestsByUser);
 router.route('/recipient/:recipientId').get(getRequestsByRecipient);
 router.route('/update/:requestId').put(updateRequest);
-router.route('/inactive/:requestId').put(inactiveRequest);
+router.route('/inactive/:requestId').delete(inactiveRequest);
 router.route('/:requestId').get(getRequest);
 router.route('/:userId').get( getRequestsByUser);
 
