@@ -1,6 +1,7 @@
 import { request } from 'express';
 import { Request } from '../models/request.model.js';
 import { User } from '../models/user.model.js';
+import { Donation } from '../models/donation.model.js';
 
 
 export const getRequest = async (req, res) => {
@@ -15,6 +16,26 @@ export const getRequest = async (req, res) => {
     catch (error) {
         console.error('Error retrieving request:', error);
         // res.status(500).json({ message: 'Error retrieving request', success: false });
+    }
+};
+
+export const getRequests = async (req, res) => {
+    try {
+        const requests = await Request.find().sort({ createdAt: -1 }).populate({
+            path: 'donation',
+            populate: {
+                path: 'donor'
+            }
+        }).populate('recipient');
+        if (!requests || requests.length === 0) {
+            return res.status(404).json({ message: 'No requests found at this time.', success: false });
+        }
+        const activeRequests = requests.filter(request => request.active === true);
+        const inactiveRequests = requests.filter(request => request.active === false);
+        res.status(200).json({ message: 'Requests retrieved successfully', success: true, requests: requests });
+    }
+    catch (error) {
+        console.error('Error retrieving requests:', error);
     }
 };
 
@@ -64,6 +85,10 @@ export const updateRequest = async (req, res) => {
         const { id } = req.params;
         const { deliveryAddress,active,status,} = req.body;
         const request = await Request.findById(id);
+        const currDonation = await Donation.findById(request.donation);
+        if (!currDonation) {
+            return res.status(404).json({ message: 'Donation not found', success: false });
+        }
         if (!request) {
             return res.status(404).json({ message: 'Request not found', success: false });
         }
@@ -71,9 +96,10 @@ export const updateRequest = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found', success: false });
         }
-        if (user.role === 'RECIPIENT' && body.status === 'PENDING' && request.active === true && active) {
+        if (user.role === 'RECIPIENT' && body.status === 'PENDING' && request.active === true) {
             request.status = 'ACCEPTED';
             request.recipient = req.id;
+            currDonation.status = 'RESERVED';
             user.requests.push(request._id);
             await user.save();
         }
@@ -87,6 +113,7 @@ export const updateRequest = async (req, res) => {
         request.deliveryAddress = deliveryAddress;
         }
         await request.save();
+        await currDonation.save();
         
         const updatedRequest = await Request.findById(id).populate('donation').populate('recipient').populate('donor');
         if (!updatedRequest) {
@@ -107,11 +134,19 @@ export const deleteRequest = async (req, res) => {
             return res.status(400).json({ message: 'Please provide a valid id' });
         }
         const user = await User.findById(req.id);
+        console.log("User ID:", req.id);
+        console.log("Request ID:", requestId);
         if (!user) {
             return res.status(404).json({ message: 'User not found', success: false });
         }
         const existRequest = await Request.findById(requestId);
         const existdonation = await Donation.findById(existRequest.donation);
+        if (!existRequest) {
+            return res.status(404).json({ message: 'Request not found', success: false });
+        }
+        if (!existdonation) {
+            return res.status(404).json({ message: 'Donation not found', success: false });
+        }
         if (user.role === 'DONOR' && existRequest.active && existRequest.status === 'PENDING') {
             user.requests.pull(requestId);
             existdonation.request = null;

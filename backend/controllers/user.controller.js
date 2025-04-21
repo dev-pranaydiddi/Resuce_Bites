@@ -69,14 +69,15 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign({ id: user._id }, secret_Key, { expiresIn: '1d' });
 
     // Set the token in the cookie
-    res.cookie("token", token, {
+   res.cookie("token", token, {
       httpOnly: true,  // Ensures the cookie is accessible only by the web server
       secure: process.env.NODE_ENV === 'production', // If in production, only send cookie over HTTPS
       maxAge: 24 * 60 * 60 * 1000, // Optional: Set an expiry time for the cookie (1 day)
     });
 
     // Send success response
-    res.status(200).json({ user: user, message: 'User logged in successfully', success: true, token });
+    req.id = user._id;
+    return res.status(200).json({ user: user, message: 'User logged in successfully', success: true, token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

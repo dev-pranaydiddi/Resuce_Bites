@@ -6,7 +6,7 @@ import isAutenticated from '../middlewares/isAuthenticated.js';
 
 const router = express.Router();
 router.route('/register').post(registerUser);
-router.route('/login').post(isAutenticated,loginUser);
+router.route('/login').post(loginUser);
 router.route('/logout').get(isAutenticated,logoutUser);
 router.route('/users').get(isAutenticated,getUsers);
 router.route('/:userId').get(isAutenticated,getUser);

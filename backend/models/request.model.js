@@ -40,7 +40,7 @@ const RequestSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Donation',
         required: true,
-        unique: true
+
     },
     delivery: {
         type: Schema.Types.ObjectId,
@@ -48,8 +48,7 @@ const RequestSchema = new Schema({
     },
     recipient: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
-        unique: true
+        ref: 'User'
     }
 }, { timestamps: true });
 

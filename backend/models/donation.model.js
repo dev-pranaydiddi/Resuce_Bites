@@ -46,19 +46,12 @@ const DonationSchema = new Schema({
     },
     pickupTime: {
         type: Date,
-        required: true,
-        validate: {
-            validator: dt => dt > new Date(),
-            message: 'Pickup time must be in the future'
-        }
+        required: true
+        
     },
     expiryTime: {
         type: Date,
-        required: true,
-        validate: {
-            validator: function (dt) { return dt > this.pickupTime; },
-            message: 'Expiry time must be after pickup time'
-        }
+        required: true
     },
     status: {
         type: String,

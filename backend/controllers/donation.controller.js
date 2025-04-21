@@ -37,9 +37,11 @@ export const createDonation = async (req, res) => {
         if (donation && user.role === 'DONOR') {
             // create a new request using the request model
             const request = new Request({ donation: donation._id, donor: user._id, status: 'PENDING',active: true });
-            donation.request = request._id;
+            donation.request= request._id;
             user.donation.push(donation._id);
+            console.log("saved");
             await request.save();
+            console.log("Request:", request );
             await donation.save();
             await user.save();
         }
@@ -57,7 +59,7 @@ export const createDonation = async (req, res) => {
 export const getDonationsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const donations = await User.findById(userId).populate('donation').populate('delivery').populate('request');
+        const donations = await User.findById(req.id).populate('donation').populate('delivery').populate('request');
         if (!donations || donations.length === 0) {
             return res.status(404).json({ message: 'No donations found at this time.', success: false });
         }
@@ -126,19 +128,26 @@ export const updateDonation = async (req, res) => {
 
 export const deleteDonation = async (req, res) => {
     try {
-        const { id } = req;
         const { donationId } = req.params;
         if (!donationId) {
             return res.status(400).json({ message: 'Please provide a valid id' });
         }
-        const donation = await Donation.findByIdAndDelete(donationId);
-        const user = await User.findById(id);
+        const currdonation = await Donation.findById(donationId);
+        console.log("Current Donation:", currdonation);
+        // check if the donation is already reserved
+        if (currdonation.status === 'RESERVED') {
+            return res.status(400).json({ message: 'Cant Delete, Cause Donation is already reserved', success: false });
+        } 
+        
+        const user = await User.findById(req.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
+        }
         user.donation.pull(donationId);
         await user.save();
-        if (!donation) {
-            return res.status(404).json({ message: 'Donation not found', success: false });
-        }
-        res.status(200).json({ message: 'Donation deleted successfully', success: true, donation: donation });
+        await Request.findByIdAndDelete(currdonation.request);
+        const donation = await Donation.findByIdAndDelete(donationId);
+        return res.status(200).json({ message: 'Donation deleted successfully', success: true, donation: donation });
     }
     catch (error) {
         console.error('Error deleting donation:', error);

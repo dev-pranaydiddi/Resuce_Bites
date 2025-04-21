@@ -1,10 +1,14 @@
 import express from 'express';
 const router = express.Router();
-import {Delivery} from '../models/delivery.model.js';
-import { User } from '../models/user.model.js';
-import { Request } from '../models/request.model.js';
 import mongoose from 'mongoose';
+import  isAuthenticated  from '../middlewares/isAuthenticated.js';
+import { createDelivery, deleteDelivery, getDeliveries, getDeliveriesByUser, getDelivery, updateDelivery } from '../controllers/delivery.controller.js';
 
-
-
+// Create a new delivery
+router.route('/all').get(isAuthenticated, getDeliveries);
+router.route('/new').post(isAuthenticated, createDelivery);
+router.route('/user/:userId').get(isAuthenticated, getDeliveriesByUser);
+router.route('/update/:id').put(isAuthenticated, updateDelivery);
+router.route('/delete/:id').delete(isAuthenticated, deleteDelivery);
+router.route('/:id').get(isAuthenticated, getDelivery);
 export default router;

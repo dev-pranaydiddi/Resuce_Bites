@@ -1,6 +1,6 @@
 import e from 'express';
-import Delivery from '../models/delivery.model.js';
-import User from '../models/user.model.js';
+import {Delivery} from '../models/delivery.model.js';
+import {User} from '../models/user.model.js';
 import { getUser } from './user.controller.js';
 
 export const createDelivery = async (req, res) => {
