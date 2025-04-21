@@ -1,5 +1,6 @@
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const CTASection = () => {
   return (
@@ -10,11 +11,17 @@ const CTASection = () => {
           Join our community of food donors and receivers. Together, we can reduce waste and feed those in need.
         </p>
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <Button asChild className="bg-white text-primary hover:bg-neutral-100 font-medium px-6 py-3 rounded-md transition-colors">
-            <Link href="/donate">Donate Food</Link>
+          <Button
+            asChild
+            className="bg-white text-primary hover:bg-neutral-100 font-medium px-6 py-3 rounded-md transition-colors"
+          >
+            <Link to="/donate">Donate Food</Link>
           </Button>
-          <Button asChild className="bg-[#D35400] text-white hover:bg-opacity-80 border-none font-medium px-6 py-3 rounded-md transition-colors">
-            <Link href="/request">Request Donation</Link>
+          <Button
+            asChild
+            className="bg-[#D35400] text-white hover:bg-opacity-80 border-none font-medium px-6 py-3 rounded-md transition-colors"
+          >
+            <Link to="/request">Request Donation</Link>
           </Button>
         </div>
       </div>

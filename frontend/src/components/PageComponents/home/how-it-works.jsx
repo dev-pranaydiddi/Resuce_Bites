@@ -1,22 +1,23 @@
-import { UserPlus, Carrot, Handshake } from "lucide-react";
+import React from 'react';
+import { UserPlus, Carrot, Handshake } from 'lucide-react';
 
 const HowItWorks = () => {
   const steps = [
     {
       icon: <UserPlus className="h-8 w-8" />,
-      title: "Register",
-      description: "Sign up as a donor or a receiving organization in just a few minutes."
+      title: 'Register',
+      description: 'Sign up as a donor or a receiving organization in just a few minutes.',
     },
     {
       icon: <Carrot className="h-8 w-8" />,
-      title: "List or Request",
-      description: "List your available food donations or request what your organization needs."
+      title: 'List or Request',
+      description: 'List your available food donations or request what your organization needs.',
     },
     {
       icon: <Handshake className="h-8 w-8" />,
-      title: "Connect",
-      description: "We facilitate the connection and help coordinate the donation process."
-    }
+      title: 'Connect',
+      description: 'We facilitate the connection and help coordinate the donation process.',
+    },
   ];
 
   return (
@@ -28,7 +29,7 @@ const HowItWorks = () => {
             Our platform makes food donation simple, secure, and efficient.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md p-6 text-center">
