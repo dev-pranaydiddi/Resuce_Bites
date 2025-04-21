@@ -1,13 +1,22 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { User } from "@shared/schema";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import OrganizationCard from "@/components/organizations/organization-card";
 
+const fetchOrganizations = async () => {
+  const response = await fetch('/api/users?type=organization');
+  if (!response.ok) {
+    throw new Error('Failed to fetch organizations');
+  }
+  return response.json();
+};
+
 const PartnerOrganizations = () => {
-  const { data: organizations, isLoading, error } = useQuery<User[]>({
-    queryKey: ["/api/users?type=organization"],
+  const { data: organizations, isLoading, error } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: fetchOrganizations,
   });
 
   return (
@@ -19,7 +28,7 @@ const PartnerOrganizations = () => {
             Join these amazing organizations in our mission to reduce food waste and hunger.
           </p>
         </div>
-        
+
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
@@ -38,8 +47,8 @@ const PartnerOrganizations = () => {
           </div>
         ) : organizations && organizations.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {organizations.map((organization) => (
-              <OrganizationCard key={organization.id} organization={organization} />
+            {organizations.map((org) => (
+              <OrganizationCard key={org.id} organization={org} />
             ))}
           </div>
         ) : (
@@ -47,10 +56,10 @@ const PartnerOrganizations = () => {
             <p className="text-neutral-600">No partner organizations yet.</p>
           </div>
         )}
-        
+
         <div className="text-center mt-10">
           <Button asChild variant="outline" className="inline-block bg-white border border-primary text-primary hover:bg-primary hover:text-white font-medium px-6 py-3 rounded-md transition-colors">
-            <Link href="/register?type=organization">Join as an Organization</Link>
+            <Link to="/register?type=organization">Join as an Organization</Link>
           </Button>
         </div>
       </div>

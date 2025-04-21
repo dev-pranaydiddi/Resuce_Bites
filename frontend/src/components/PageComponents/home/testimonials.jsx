@@ -1,11 +1,20 @@
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Testimonial } from "@shared/schema";
 import { Quote } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const fetchTestimonials = async () => {
+  const response = await fetch('/api/testimonials');
+  if (!response.ok) {
+    throw new Error('Failed to fetch testimonials');
+  }
+  return response.json();
+};
+
 const TestimonialsSection = () => {
-  const { data: testimonials, isLoading, error } = useQuery<Testimonial[]>({
-    queryKey: ["/api/testimonials"],
+  const { data: testimonials, isLoading, error } = useQuery({
+    queryKey: ['testimonials'],
+    queryFn: fetchTestimonials,
   });
 
   return (
@@ -17,7 +26,7 @@ const TestimonialsSection = () => {
             Stories from donors and receiving organizations in our community.
           </p>
         </div>
-        
+
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {[1, 2].map((i) => (
@@ -53,9 +62,7 @@ const TestimonialsSection = () => {
                   <p className="italic text-neutral-700">{testimonial.text}</p>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 rounded-full bg-neutral-300 mr-3">
-                    {/* User avatar placeholder */}
-                  </div>
+                  <div className="w-12 h-12 rounded-full bg-neutral-300 mr-3" />
                   <div>
                     <div className="font-medium">User #{testimonial.userId}</div>
                     <div className="text-sm text-neutral-500">{testimonial.role}</div>

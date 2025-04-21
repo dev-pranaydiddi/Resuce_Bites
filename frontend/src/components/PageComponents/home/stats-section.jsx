@@ -1,3 +1,5 @@
+import React from "react";
+
 const StatsSection = () => {
   const stats = [
     { value: "15,000+", label: "Meals Donated" },
