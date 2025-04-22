@@ -1,6 +1,7 @@
 import { request } from 'express';
 import { Request } from '../models/request.model.js';
 import { User } from '../models/user.model.js';
+import { Delivery } from '../models/delivery.model.js';
 import { Donation } from '../models/donation.model.js';
 
 
@@ -96,22 +97,24 @@ export const updateRequest = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found', success: false });
         }
-        if (user.role === 'RECIPIENT' && body.status === 'PENDING' && request.active === true) {
+        if (user.role === 'RECIPIENT' && status === 'ACCEPTED' && request.active === true && request.status === 'PENDING') {
             request.status = 'ACCEPTED';
+            // assigning the delivery address given by the recipient while accepting the request
+            request.deliveryAddress = deliveryAddress || request.deliveryAddress;
             request.recipient = req.id;
             currDonation.status = 'RESERVED';
             user.requests.push(request._id);
+            const delivery  = new Delivery({status: 'STAND_BY', donation: currDonation._id});
             await user.save();
         }
-        else if (user.role === 'DONOR' && request.status === 'PENDING' && request.active === true && !active)
+        if (user.role === 'DONOR' && request.status === 'PENDING' && request.active === true && !active)
             request.active = false;
-        else if (user.role === 'DONOR' && body.status === 'PENDING' && request.active === false && active)
+        if (user.role === 'DONOR' && body.status === 'PENDING' && request.active === false && active)
             request.active = true;
 
         //update the request with the new data which is passed in the body of the request
-        if(user.role === 'RECIPIENT' && request.active === true && status === 'ACCEPTED'){
-        request.deliveryAddress = deliveryAddress;
-        }
+
+
         await request.save();
         await currDonation.save();
         

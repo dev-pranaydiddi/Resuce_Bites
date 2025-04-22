@@ -24,6 +24,11 @@ const DonationSchema = new Schema({
         }
     },
     pickupAddress: {
+        name:{
+            type: String,
+            required: true,
+            trim: true
+        },
         type: {
             type: String,
             enum: ['Point'],
@@ -38,11 +43,6 @@ const DonationSchema = new Schema({
                 message: 'Coordinates must be [lng, lat]'
             }
         }
-    },
-    pickupLocationName: {
-        type: String,
-        required: true,
-        trim: true
     },
     pickupTime: {
         type: Date,
