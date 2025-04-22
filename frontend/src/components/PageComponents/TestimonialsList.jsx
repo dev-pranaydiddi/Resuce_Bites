@@ -1,14 +1,38 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { getAllTestimonials } from '@/lib/donation-api';
 import TestimonialCard from './TestimonialCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const TestimonialsList = ({ limit }) => {
-  const { data: testimonials = [], isLoading } = useQuery({
-    queryKey: ['testimonials'],
-    queryFn: getAllTestimonials,
-  });
+  const [testimonials, setTestimonials] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    getAllTestimonials()
+      .then((data) => {
+        if (isMounted) {
+          setTestimonials(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch testimonials:', err);
+        if (isMounted) {
+          setError(err);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -34,11 +58,15 @@ const TestimonialsList = ({ limit }) => {
     );
   }
 
+  if (error) {
+    return <p className="text-center text-red-500">Failed to load testimonials.</p>;
+  }
+
   const displayed = limit ? testimonials.slice(0, limit) : testimonials;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {displayed.map(testimonial => (
+      {displayed.map((testimonial) => (
         <TestimonialCard key={testimonial.id} testimonial={testimonial} />
       ))}
     </div>

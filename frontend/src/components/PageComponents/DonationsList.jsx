@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getAllDonations } from '@/lib/donation-api';
 import DonationCard from './DonationCard';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,12 +7,27 @@ import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const DonationsList = ({ limit, showViewAll = false, filter = 'available' }) => {
+  const [donations, setDonations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: donations = [], isLoading } = useQuery({
-    queryKey: ['donations'],
-    queryFn: getAllDonations,
-  });
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+    getAllDonations()
+      .then(data => {
+        if (isMounted) setDonations(data);
+      })
+      .catch(err => {
+        console.error('Failed to fetch donations:', err);
+        if (isMounted) setError(err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   if (isLoading) {
     return (
@@ -37,21 +51,27 @@ const DonationsList = ({ limit, showViewAll = false, filter = 'available' }) => 
     );
   }
 
-  // Filter by status
-  const filteredDonations = donations
-    .filter(d => filter === 'all' || d.status === filter)
-    .filter(d => {
-      if (!searchTerm) return true;
-      const lower = searchTerm.toLowerCase();
-      return (
-        d.title.toLowerCase().includes(lower) ||
-        d.description.toLowerCase().includes(lower) ||
-        d.location.toLowerCase().includes(lower) ||
-        (d.foodType && d.foodType.toLowerCase().includes(lower))
-      );
-    });
+  if (error) {
+    return <p className="text-center text-red-500">Failed to load donations.</p>;
+  }
 
-  const displayed = limit ? filteredDonations.slice(0, limit) : filteredDonations;
+  // apply status filter
+  const filtered = useMemo(() => (
+    donations
+      .filter(d => filter === 'all' || d.status === filter)
+      .filter(d => {
+        if (!searchTerm) return true;
+        const lower = searchTerm.toLowerCase();
+        return (
+          d.title.toLowerCase().includes(lower) ||
+          d.description.toLowerCase().includes(lower) ||
+          d.location.toLowerCase().includes(lower) ||
+          (d.foodType && d.foodType.toLowerCase().includes(lower))
+        );
+      })
+  ), [donations, filter, searchTerm]);
+
+  const displayed = limit ? filtered.slice(0, limit) : filtered;
 
   return (
     <div>
@@ -62,7 +82,7 @@ const DonationsList = ({ limit, showViewAll = false, filter = 'available' }) => 
           </div>
           <Input
             type="text"
-            placeholder="Search donations by title, description, or location..."
+            placeholder="Search donations..."
             className="pl-10"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
@@ -87,7 +107,7 @@ const DonationsList = ({ limit, showViewAll = false, filter = 'available' }) => 
         </div>
       )}
 
-      {showViewAll && filteredDonations.length > (limit || 0) && (
+      {showViewAll && filtered.length > (limit || 0) && (
         <div className="mt-8 text-center">
           <Link
             to="/donate"

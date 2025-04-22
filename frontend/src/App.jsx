@@ -1,11 +1,14 @@
-import React, { useContext, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import { Toaster } from "./components/ui/toaster";
-import { useToast } from "./hooks/use-toast";
+// App.js
+import React, { useContext, useEffect, useState, createContext } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation as useRouterLocation,
+} from "react-router-dom";
+import { Toaster, toast } from "sonner";
 
-// Pages (adjust relative paths as needed)
+// Pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -14,15 +17,15 @@ import RequestPage from "./pages/RequestPage";
 import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/not-found";
 
 // Components
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Navbar from "./components/PageComponents/Navbar";
+import Footer from "./components/PageComponents/Footer";
+import ProtectedRoute from "./components/PageComponents/ProtectedRoute";
 
-// Auth context (no TypeScript)
-export const AuthContext = React.createContext({
+// Auth context
+export const AuthContext = createContext({
   user: null,
   organization: null,
   loading: true,
@@ -35,21 +38,36 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [organization, setOrganization] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const checkSession = async () => {
     try {
-      const response = await fetch('/api/session', { credentials: 'include' });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setOrganization(data.organization || null);
-        return true;
-      } else {
+      const res = await fetch("/api/session", {
+        credentials: "include",
+      });
+      if (!res.ok) {
         setUser(null);
         setOrganization(null);
         return false;
       }
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        // not JSON, likely a redirect or HTML error page
+        setUser(null);
+        setOrganization(null);
+        return false;
+      }
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        console.error("Session JSON parse error:", parseErr);
+        setUser(null);
+        setOrganization(null);
+        return false;
+      }
+      setUser(data.user);
+      setOrganization(data.organization || null);
+      return true;
     } catch (error) {
       console.error("Failed to check session:", error);
       return false;
@@ -61,89 +79,105 @@ function AuthProvider({ children }) {
       await checkSession();
       setLoading(false);
     })();
-    const intervalId = setInterval(checkSession, 60 * 1000);
-    return () => clearInterval(intervalId);
+    const interval = setInterval(checkSession, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   const login = (userData, orgData) => {
     setUser(userData);
-    if (orgData) setOrganization(orgData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    if (orgData) localStorage.setItem('organization', JSON.stringify(orgData));
-    toast({
-      title: "Logged in successfully",
-      description: `Welcome back, ${userData.name}!`,
-    });
+    setOrganization(orgData || null);
+    localStorage.setItem("user", JSON.stringify(userData));
+    if (orgData) localStorage.setItem("organization", JSON.stringify(orgData));
+    toast.success(`Welcome back, ${userData.name}!`);
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+      await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
       setUser(null);
       setOrganization(null);
-      localStorage.removeItem('user');
-      localStorage.removeItem('organization');
-      toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
-      });
+      localStorage.removeItem("user");
+      localStorage.removeItem("organization");
+      toast.success("You have been logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);
-      toast({
-        title: "Logout failed",
-        description: "There was an error logging out. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("There was an error logging out. Please try again.");
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, organization, loading, login, logout, checkSession }}>
+    <AuthContext.Provider
+      value={{ user, organization, loading, login, logout, checkSession }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 function Router() {
-  const location = useLocation();
+  const location = useRouterLocation();
 
   return (
     <>
       <Navbar />
+
       <main className="flex-grow">
         <Routes>
-          {/* Public routes */}
+          {/* Public */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<About />} />
 
-          {/* Protected routes */}
-          <Route path="/donate" element={<ProtectedRoute><DonatePage /></ProtectedRoute>} />
-          <Route path="/request" element={<ProtectedRoute><RequestPage /></ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          {/* Protected */}
+          <Route
+            path="/donate"
+            element={
+              <ProtectedRoute>
+                <DonatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/request"
+            element={
+              <ProtectedRoute>
+                <RequestPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* 404 */}
+          {/* Fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      {location.pathname !== '/login' && location.pathname !== '/register' && <Footer />}
+
+      {/* hide footer on auth pages */}
+      {location.pathname !== "/login" &&
+        location.pathname !== "/register" && <Footer />}
     </>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router />
-          <Toaster />
-        </AuthProvider>
-      </QueryClientProvider>
+      <AuthProvider>
+        <Router />
+        <Toaster position="bottom-right" richColors />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
-
-export default App;

@@ -1,16 +1,14 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertDonationSchema } from "@shared/schema";
 import { z } from "zod";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/App";
 import { useToast } from "@/hooks/use-toast";
 import { createDonation } from "@/lib/donation-api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 
-import DonationsList from "@/components/DonationsList";
+import DonationsList from "@/components/PageComponents/DonationsList";
 import {
   Card,
   CardContent,
@@ -45,7 +43,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-// Extend the donation schema with frontend validation
+// Frontend validation schema
 const donationFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -59,19 +57,29 @@ const donationFormSchema = z.object({
   isUrgent: z.boolean().default(false),
 });
 
+const foodTypes = [
+  { value: "bakery", label: "Bakery Items" },
+  { value: "produce", label: "Fresh Produce" },
+  { value: "prepared", label: "Prepared Meals" },
+  { value: "canned", label: "Canned Goods" },
+  { value: "dairy", label: "Dairy Products" },
+  { value: "meat", label: "Meat & Proteins" },
+  { value: "beverages", label: "Beverages" },
+  { value: "other", label: "Other" },
+];
+
 const DonatePage = () => {
   const [activeTab, setActiveTab] = useState("donate");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useContext(AuthContext);
   const { toast } = useToast();
-  const [_, setLocation] = useLocation();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, []);
 
-  const form = useForm<z.infer<typeof donationFormSchema>>({
+  const form = useForm({
     resolver: zodResolver(donationFormSchema),
     defaultValues: {
       title: "",
@@ -86,67 +94,48 @@ const DonatePage = () => {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: createDonation,
-    onSuccess: () => {
-      toast({
-        title: "Donation created",
-        description: "Your donation has been listed successfully",
-      });
-      
-      // Reset form
-      form.reset();
-      
-      // Invalidate donations query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ["/api/donations"] });
-      
-      // Switch to browse tab
-      setActiveTab("browse");
-    },
-    onError: (error) => {
-      console.error("Error creating donation:", error);
-      toast({
-        title: "Failed to create donation",
-        description: "There was an error creating your donation. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = async (values: z.infer<typeof donationFormSchema>) => {
+  const onSubmit = async (values) => {
     if (!user) {
       toast({
         title: "Authentication required",
         description: "Please log in to create a donation",
         variant: "destructive",
       });
-      setLocation("/login");
+      navigate("/login");
       return;
     }
-
-    // Set the donorId to the current user's id
-    values.donorId = user.id;
-
-    // Submit the donation
-    mutation.mutate(values);
+    setIsSubmitting(true);
+    try {
+      // ensure donorId correctness
+      values.donorId = user.id;
+      // call API
+      await createDonation(values);
+      toast({
+        title: "Donation created",
+        description: "Your donation has been listed successfully",
+      });
+      form.reset();
+      setActiveTab("browse");
+    } catch (err) {
+      console.error("Failed to create donation:", err);
+      toast({
+        title: "Failed to create donation",
+        description: "There was an error creating your donation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const foodTypes = [
-    { value: "bakery", label: "Bakery Items" },
-    { value: "produce", label: "Fresh Produce" },
-    { value: "prepared", label: "Prepared Meals" },
-    { value: "canned", label: "Canned Goods" },
-    { value: "dairy", label: "Dairy Products" },
-    { value: "meat", label: "Meat & Proteins" },
-    { value: "beverages", label: "Beverages" },
-    { value: "other", label: "Other" },
-  ];
 
   return (
     <>
       <Helmet>
         <title>Donate Food | FoodShare</title>
-        <meta name="description" content="Donate excess food to organizations in need and help reduce food waste." />
+        <meta
+          name="description"
+          content="Donate excess food to organizations in need and help reduce food waste."
+        />
       </Helmet>
 
       <div className="bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--primary))] py-10 px-4">
@@ -161,26 +150,24 @@ const DonatePage = () => {
       </div>
 
       <div className="container mx-auto py-8 px-4">
-        <Tabs defaultValue="donate" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="donate">
           <TabsList className="grid w-full max-w-md mx-auto mb-8 grid-cols-2">
             <TabsTrigger value="donate">Create Donation</TabsTrigger>
             <TabsTrigger value="browse">Browse Donations</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="donate" className="max-w-3xl mx-auto">
+          <TabsContent value="donate">
             {!user ? (
               <Card>
                 <CardHeader>
                   <CardTitle>Authentication Required</CardTitle>
                   <CardDescription>
-                    You must be logged in to create a donation
+                    You must be logged in to create a donation.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center gap-4">
-                  <Button onClick={() => setLocation("/login")}>Login</Button>
-                  <Button variant="outline" onClick={() => setLocation("/register")}>
-                    Register
-                  </Button>
+                  <Button onClick={() => navigate("/login")}>Login</Button>
+                  <Button variant="outline" onClick={() => navigate("/register")}>Register</Button>
                 </CardContent>
               </Card>
             ) : user.userType !== "donor" ? (
@@ -188,13 +175,11 @@ const DonatePage = () => {
                 <CardHeader>
                   <CardTitle>Organization Account</CardTitle>
                   <CardDescription>
-                    Your account is registered as an organization. Only donor accounts can create donations.
+                    Only donor accounts can create donations. Browse donations instead.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center">
-                  <Button onClick={() => setActiveTab("browse")}>
-                    Browse Available Donations
-                  </Button>
+                  <Button onClick={() => setActiveTab("browse")}>Browse Available Donations</Button>
                 </CardContent>
               </Card>
             ) : (
@@ -202,7 +187,7 @@ const DonatePage = () => {
                 <CardHeader>
                   <CardTitle>Create a Donation</CardTitle>
                   <CardDescription>
-                    Fill out the form below to list your food donation
+                    Fill out the form below to list your food donation.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -215,10 +200,7 @@ const DonatePage = () => {
                           <FormItem>
                             <FormLabel>Donation Title</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="E.g., Fresh Bakery Items, Surplus Produce"
-                                {...field}
-                              />
+                              <Input placeholder="E.g., Fresh Bakery Items" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -233,14 +215,9 @@ const DonatePage = () => {
                             <FormItem>
                               <FormLabel>Quantity</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="E.g., 20 loaves, 15 lbs, 10 meals"
-                                  {...field}
-                                />
+                                <Input placeholder="E.g., 20 loaves" {...field} />
                               </FormControl>
-                              <FormDescription>
-                                Specify amount, weight, or number of servings
-                              </FormDescription>
+                              <FormDescription>Specify amount, weight, or servings</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -253,14 +230,9 @@ const DonatePage = () => {
                             <FormItem>
                               <FormLabel>Location</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="E.g., Downtown, North Side"
-                                  {...field}
-                                />
+                                <Input placeholder="E.g., Downtown" {...field} />
                               </FormControl>
-                              <FormDescription>
-                                General area where the food is available
-                              </FormDescription>
+                              <FormDescription>Where pickup will occur</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -274,23 +246,16 @@ const DonatePage = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Food Type</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select food type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {foodTypes.map((type) => (
-                                    <SelectItem key={type.value} value={type.value}>
-                                      {type.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <SelectTrigger><SelectValue placeholder="Select food type" /></SelectTrigger>
+                                  <SelectContent>
+                                    {foodTypes.map((type) => (
+                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -303,39 +268,17 @@ const DonatePage = () => {
                             <FormItem className="flex flex-col">
                               <FormLabel>Expiry Date (optional)</FormLabel>
                               <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "w-full pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "PPP")
-                                      ) : (
-                                        <span>Pick a date</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) =>
-                                      date < new Date() || date > new Date(new Date().setDate(new Date().getDate() + 30))
-                                    }
-                                    initialFocus
-                                  />
+                                <PopoverTrigger asChild><FormControl>
+                                  <Button variant="outline" className={cn("w-full text-left", !field.value && "text-muted-foreground")}>
+                                    {field.value ? format(field.value, "PPP") : "Pick a date"}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl></PopoverTrigger>
+                                <PopoverContent className="p-0" align="start">
+                                  <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date() || date > new Date(new Date().setDate(new Date().getDate() + 30))} />
                                 </PopoverContent>
                               </Popover>
-                              <FormDescription>
-                                When will this food be best consumed by?
-                              </FormDescription>
+                              <FormDescription>Best before date</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -349,11 +292,7 @@ const DonatePage = () => {
                           <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Textarea
-                                placeholder="Describe the food items in detail, including any allergens or dietary information"
-                                className="min-h-[120px]"
-                                {...field}
-                              />
+                              <Textarea placeholder="Describe the food items" className="min-h-[120px]" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -366,12 +305,7 @@ const DonatePage = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Pickup Instructions (optional)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Provide details about pickup times, location, or other requirements"
-                                {...field}
-                              />
-                            </FormControl>
+                            <FormControl><Textarea placeholder="Pickup details" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -383,15 +317,8 @@ const DonatePage = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Image URL (optional)</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Enter a URL for an image of the food items"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              A photo helps organizations identify your donation
-                            </FormDescription>
+                            <FormControl><Input placeholder="Image link" {...field} /></FormControl>
+                            <FormDescription>Helps organizations identify your donation</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -401,31 +328,18 @@ const DonatePage = () => {
                         control={form.control}
                         name="isUrgent"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                              <FormLabel className="text-base">
-                                Mark as Urgent
-                              </FormLabel>
-                              <FormDescription>
-                                Urgent donations are highlighted for immediate pickup
-                              </FormDescription>
+                          <FormItem className="flex items-center justify-between border p-4">
+                            <div>
+                              <FormLabel className="mb-0">Mark as Urgent</FormLabel>
+                              <FormDescription>Highlights for immediate pickup</FormDescription>
                             </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
+                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                           </FormItem>
                         )}
                       />
 
-                      <Button 
-                        type="submit" 
-                        className="w-full"
-                        disabled={mutation.isPending}
-                      >
-                        {mutation.isPending ? "Creating Donation..." : "Create Donation"}
+                      <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        {isSubmitting ? "Creating Donation..." : "Create Donation"}
                       </Button>
                     </form>
                   </Form>
@@ -436,9 +350,7 @@ const DonatePage = () => {
 
           <TabsContent value="browse">
             <div className="container mx-auto mb-8">
-              <h2 className="text-2xl font-heading font-bold mb-6">
-                Available Donations
-              </h2>
+              <h2 className="text-2xl font-heading font-bold mb-6">Available Donations</h2>
               <DonationsList />
             </div>
           </TabsContent>

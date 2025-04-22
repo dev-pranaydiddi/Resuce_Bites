@@ -1,6 +1,5 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getAllOrganizations } from '@/lib/donation-api';
+import { useOrganizations } from '@/hooks/useApi';
 import OrganizationCard from './OrganizationCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from 'react-router-dom';
@@ -8,12 +7,9 @@ import { Link } from 'react-router-dom';
 const iconTypes = ['heart', 'hands', 'home', 'utensils'];
 
 const OrganizationsList = ({ limit, showViewAll = false }) => {
-  const { data: organizations = [], isLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: getAllOrganizations,
-  });
+  const { data: organizations = [], loading, error } = useOrganizations();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {Array.from({ length: limit || 4 }).map((_, idx) => (
@@ -23,6 +19,14 @@ const OrganizationsList = ({ limit, showViewAll = false }) => {
           </div>
         ))}
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="text-center text-red-500">
+        Failed to load organizations.
+      </p>
     );
   }
 

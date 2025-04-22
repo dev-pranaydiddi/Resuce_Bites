@@ -1,7 +1,8 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { Heart, Utensils, BarChart2, Globe } from "lucide-react";
-import TestimonialsList from "@/components/TestimonialsList";
+import TestimonialsList from "../components/PageComponents/TestimonialsList";
 import { Helmet } from "react-helmet";
 
 const About = () => {
@@ -9,7 +10,10 @@ const About = () => {
     <>
       <Helmet>
         <title>About Us | FoodShare</title>
-        <meta name="description" content="Learn about FoodShare's mission to reduce food waste and fight hunger in our communities." />
+        <meta
+          name="description"
+          content="Learn about FoodShare's mission to reduce food waste and fight hunger in our communities."
+        />
       </Helmet>
 
       <div className="bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--primary))] py-10 px-4">
@@ -26,6 +30,7 @@ const About = () => {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
+            {/* Mission */}
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-6">
                 Our Mission
@@ -38,6 +43,7 @@ const About = () => {
               </p>
             </div>
 
+            {/* Vision */}
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-6">
                 Our Vision
@@ -50,6 +56,7 @@ const About = () => {
               </p>
             </div>
 
+            {/* Problem */}
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-6">
                 The Problem We're Solving
@@ -79,6 +86,7 @@ const About = () => {
               </p>
             </div>
 
+            {/* Impact */}
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-6">
                 Our Impact
@@ -102,6 +110,7 @@ const About = () => {
               </p>
             </div>
 
+            {/* Values */}
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-6">
                 Our Values
@@ -109,7 +118,13 @@ const About = () => {
               <div className="space-y-6">
                 <div className="flex">
                   <div className="w-12 h-12 bg-[hsl(var(--accent-light))] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[hsl(var(--accent-dark))]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-[hsl(var(--accent-dark))]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
@@ -133,7 +148,13 @@ const About = () => {
                 </div>
                 <div className="flex">
                   <div className="w-12 h-12 bg-[hsl(var(--secondary-light))] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[hsl(var(--secondary-dark))]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-[hsl(var(--secondary-dark))]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                   </div>
@@ -158,6 +179,7 @@ const About = () => {
               </div>
             </div>
 
+            {/* Testimonials */}
             <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-8 text-center">
                 What People Say About Us
@@ -165,20 +187,19 @@ const About = () => {
               <TestimonialsList limit={3} />
             </div>
 
+            {/* Call to Action */}
             <div className="text-center">
-              <h3 className="text-xl font-heading font-semibold mb-6">
-                Join Our Mission
-              </h3>
+              <h3 className="text-xl font-heading font-semibold mb-6">Join Our Mission</h3>
               <p className="text-lg text-neutral-700 mb-8 max-w-2xl mx-auto">
                 Whether you're a business with surplus food, an organization serving those in need, or an individual looking to make a difference, you can be part of our mission to reduce waste and fight hunger.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/register">
+                <Link to="/register">
                   <Button size="lg" className="px-8">
                     Join FoodShare
                   </Button>
                 </Link>
-                <Link href="/how-it-works">
+                <Link to="/how-it-works">
                   <Button size="lg" variant="outline" className="px-8">
                     How It Works
                   </Button>

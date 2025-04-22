@@ -7,7 +7,7 @@ const Hero = () => {
     <section className="bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--primary))] py-16 md:py-24 relative overflow-hidden">
       {/* Background image with overlay */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-10"
+        className="absolute inset-0 bg-cover bg-center "
         style={{
           backgroundImage:
             "url('https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')",
