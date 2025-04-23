@@ -11,6 +11,7 @@ export function loginUser(username, password) {
 
 /** @param {object} userData */
 export function registerUser(userData) {
+  console.log("registerUser", userData)
   return apiRequest("POST", "/api/register", userData)
     .then(res => res.json());
 }

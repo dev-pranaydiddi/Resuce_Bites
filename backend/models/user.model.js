@@ -29,6 +29,7 @@ const UserSchema = new Schema({
         default: 'RECIPIENT'
     },
     address: {
+        orgName: String,
         street: String,
         city: String,
         state: String,

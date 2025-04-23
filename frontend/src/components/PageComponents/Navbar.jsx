@@ -19,7 +19,7 @@ const Navbar = () => {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
-      <nav className="container mx-auto px-4 py-3 flex justify-between items-center">
+      <nav className=" max-w-full px-4 py-3 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-8 w-8 fill-red-800 stroke-red-800 text-red-800" />
           <div className="font-heading font-bold text-2xl text-neutral-800">
@@ -69,7 +69,7 @@ const Navbar = () => {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden text-neutral-800 text-2xl"
+          className="md:hidden bg-red-900 text-[#fff] text-2xl"
           onClick={toggleMobileMenu}
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
         >

@@ -78,11 +78,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex absolute w-full   top-0 z-0 items-center justify-center bg-gray-50">
       <div className="w-full max-w-sm bg-white rounded-lg shadow p-6">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-            <Heart className="h-6 w-6 text-blue-600" />
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
+            <Heart className="h-6 w-6 text-red-600" />
           </div>
           <h2 className="text-2xl font-bold">Welcome to FoodShare</h2>
           <p className="text-gray-600 text-sm">Enter your credentials below</p>
@@ -90,12 +90,12 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 mb-1">Username</label>
+            <label className="block text-gray-900 font-semibold mb-1">Username</label>
             <input
               name="username"
               value={form.username}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border rounded bg-white focus:outline-none focus:ring focus:ring-red-500"
               placeholder="Your username"
             />
             {errors.username && (
@@ -104,13 +104,13 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-1">Password</label>
+            <label className="block text-gray-900 font-semibold mb-1">Password</label>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-red-500"
               placeholder="Your password"
             />
             {errors.password && (
@@ -121,7 +121,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
           >
             {isLoading ? "Signing in..." : "Sign In"}
           </button>
@@ -129,7 +129,7 @@ const Login = () => {
 
         <p className="mt-4 text-center text-gray-600 text-sm">
           Don’t have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-red-600 hover:underline">
             Register
           </Link>
         </p>
