@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const DonationsList = ({ limit, showViewAll = false, filter = 'available' }) => {
+const DonationsList = ({ limit, showViewAll = false, filter }) => {
   const [donations, setDonations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

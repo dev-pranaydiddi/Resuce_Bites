@@ -85,6 +85,22 @@ export const getDonations = async (req, res) => {
     }
 };
 
+export const getDonationsByStatus = async (req, res) => {
+    try {
+        let status  = req.params.status.toUpperCase();
+        console.log("Status:", status);
+        const donations = await Donation.find({ status: status }).sort({ createdAt: -1 }).populate('recipient').populate('request').populate('delivery').populate('donor');
+        if (!donations || donations.length === 0) {
+            return res.status(404).json({ message: 'No donations found at this time.', success: false });
+        }
+        res.status(200).json({ message: 'Donations retrieved successfully', success: true, donations: donations });
+    }
+    catch (error) {
+        console.error('Error retrieving donations:', error);
+        res.status(500).json({ message: 'Error retrieving donations', success: false });
+    }
+};
+
 export const getDonation = async (req, res) => {
     try {
         const { donationId } = req.params;

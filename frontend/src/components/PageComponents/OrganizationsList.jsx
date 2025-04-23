@@ -42,7 +42,7 @@ const OrganizationsList = ({ limit, showViewAll = false }) => {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
           {displayed.map((org, idx) => (
-            <OrganizationCard
+            <OrganizationCard 
               key={org.id}
               organization={org}
               iconType={iconTypes[idx % iconTypes.length]}

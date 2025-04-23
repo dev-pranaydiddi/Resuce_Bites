@@ -22,7 +22,7 @@ const Home = () => {
 
       <Hero />
 
-      <ImpactStats />
+      {/* <ImpactStats /> */}
 
       <HowItWorksSection />
 
@@ -53,7 +53,7 @@ const Home = () => {
             </Link>
           </div>
 
-          <DonationsList limit={3} showViewAll={true} filter="available" />
+          <DonationsList limit={3} showViewAll={true} filter="AVAILABLE" />
         </div>
       </section>
 

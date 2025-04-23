@@ -4,10 +4,11 @@ import {Donation} from '../models/donation.model.js';
 import { User } from '../models/user.model.js';
 import { Request } from '../models/request.model.js';
 import mongoose from 'mongoose';
-import { createDonation, getDonation, getDonations, getDonationsByUser, deleteDonation, updateDonation } from'../controllers/donation.controller.js';
+import { createDonation, getDonation, getDonations, getDonationsByUser, deleteDonation, updateDonation, getDonationsByStatus } from'../controllers/donation.controller.js';
 import isAuthenticated from '../middlewares/isAuthenticated.js';
 
 router.route('/all').get(getDonations);
+router.route('/all/:status').get(getDonationsByStatus);
 router.route('/user/:userId').get(isAuthenticated,getDonationsByUser);
 router.route('/update/:donationId').put(isAuthenticated,updateDonation);
 router.route('/delete/:donationId').delete(isAuthenticated,deleteDonation);

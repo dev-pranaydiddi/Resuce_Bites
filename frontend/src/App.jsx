@@ -18,7 +18,7 @@ import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/not-found";
-import Address_Fetching from "./pages/Address_Fetching"; 
+// import Address_Fetching from "./pages/Address_Fetching"; 
 
 // Components
 import Navbar from "./components/PageComponents/Navbar";
