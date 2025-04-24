@@ -42,6 +42,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useSelector } from "react-redux";
 
 // Frontend validation schema
 const donationFormSchema = z.object({
@@ -71,9 +72,12 @@ const foodTypes = [
 const DonatePage = () => {
   const [activeTab, setActiveTab] = useState("donate");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useContext(AuthContext);
+  // const user = useSelector((state) => state.auth.user);
   const { toast } = useToast();
   const navigate = useNavigate();
+    const { user, logout } = useContext(AuthContext);
+    const isAuthenticated = Boolean(user);
+    console.log("user", user);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -157,7 +161,7 @@ const DonatePage = () => {
           </TabsList>
 
           <TabsContent value="donate">
-            {!user ? (
+            {!user.user ? (
               <Card>
                 <CardHeader>
                   <CardTitle>Authentication Required</CardTitle>
@@ -170,7 +174,7 @@ const DonatePage = () => {
                   <Button variant="outline" onClick={() => navigate("/register")}>Register</Button>
                 </CardContent>
               </Card>
-            ) : user.userType !== "donor" ? (
+            ) : user.user.role !== "DONOR" ? (
               <Card>
                 <CardHeader>
                   <CardTitle>Organization Account</CardTitle>

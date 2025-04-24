@@ -23,24 +23,30 @@ const DonationSchema = new Schema({
             required: true
         }
     },
-    pickupAddress: {
-        name:{
-            type: String,
-            required: true,
-            trim: true
-        },
-        type: {
-            type: String,
-            enum: ['Point'],
-            required: true,
-            default: 'Point'
-        },
-        coordinates: {
-            type: [Number],
-            required: true,
-            validate: {
-                validator: coords => coords.length === 2,
-                message: 'Coordinates must be [lng, lat]'
+    pickUpAddress: {
+        street: String,
+        city: String,
+        state: String,
+        zip: String,
+        country: { type: String },
+        Geolocation: {
+            coordinates: {
+                lat: Number,
+                long: Number,
+            }
+        }
+    },
+    deliveryAddress: {
+        orgName: String,
+        street: String,
+        city: String,
+        state: String,
+        zip: String,
+        country: { type: String },
+        Geolocation: {
+            coordinates: {
+                lat: Number,
+                long: Number,
             }
         }
     },
