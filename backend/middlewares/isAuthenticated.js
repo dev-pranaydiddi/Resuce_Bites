@@ -8,7 +8,7 @@ const isAuthenticated = (req, res, next) => {
     if (!token && req.headers.authorization) {
         token = req.headers.authorization;
     }
-
+    
     if (!token) {
         return res.status(401).json({
             message: "User not authenticated",

@@ -1,4 +1,4 @@
-// App.js
+// src/App.jsx
 import React, { useContext, useEffect, useState, createContext } from "react";
 import {
   BrowserRouter,
@@ -7,6 +7,13 @@ import {
   useLocation as useRouterLocation,
 } from "react-router-dom";
 import { Toaster, toast } from "sonner";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+
+// Endpoints
+import { USER } from "./Endpoints";
+// Redux
+import { setUser  } from "./store/authSlice";
 
 // Pages
 import Home from "./pages/Home";
@@ -18,12 +25,12 @@ import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/not-found";
-// import Address_Fetching from "./pages/Address_Fetching"; 
 
 // Components
 import Navbar from "./components/PageComponents/Navbar";
 import Footer from "./components/PageComponents/Footer";
 import ProtectedRoute from "./components/PageComponents/ProtectedRoute";
+import { checkUserSession, logoutUser } from "./lib/donation-api";
 
 // Auth context
 export const AuthContext = createContext({
@@ -36,41 +43,27 @@ export const AuthContext = createContext({
 });
 
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [organization, setOrganization] = useState(null);
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);
+  const organization = useSelector((state) => state.auth.organization);
   const [loading, setLoading] = useState(true);
 
   const checkSession = async () => {
     try {
-      const res = await fetch("/api/session", {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        setUser(null);
-        setOrganization(null);
+      const  data  = await checkUserSession();
+      if (data.success) {
+        dispatch(setUser({
+          user: data.user,
+          organization: data.organization || null,
+        }));
+        return true;
+      } else {
+        dispatch(setUser(null));
         return false;
       }
-      const contentType = res.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        // not JSON, likely a redirect or HTML error page
-        setUser(null);
-        setOrganization(null);
-        return false;
-      }
-      let data;
-      try {
-        data = await res.json();
-      } catch (parseErr) {
-        console.error("Session JSON parse error:", parseErr);
-        setUser(null);
-        setOrganization(null);
-        return false;
-      }
-      setUser(data.user);
-      setOrganization(data.organization || null);
-      return true;
     } catch (error) {
       console.error("Failed to check session:", error);
+      dispatch(setUser(null));
       return false;
     }
   };
@@ -80,32 +73,26 @@ function AuthProvider({ children }) {
       await checkSession();
       setLoading(false);
     })();
-    const interval = setInterval(checkSession, 60_000);
+    const interval = setInterval(checkSession, 60000);
     return () => clearInterval(interval);
   }, []);
 
   const login = (userData, orgData) => {
-    setUser(userData);
-    setOrganization(orgData || null);
-    localStorage.setItem("user", JSON.stringify(userData));
-    if (orgData) localStorage.setItem("organization", JSON.stringify(orgData));
-    toast.success(`Welcome back, ${userData.name}!`);
+    console.log("login", userData);
+    dispatch(
+      setUser({ user: userData, organization: orgData || null })
+    );
+    toast.success(`Welcome back, ${userData.name.first} ${userData.name.last}!`);
   };
 
   const logout = async () => {
     try {
-      await fetch("/api/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      setUser(null);
-      setOrganization(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("organization");
-      toast.success("You have been logged out successfully");
+      await logoutUser();
+      dispatch(setUser(null));
+      toast.success("Logged out successfully");
     } catch (error) {
       console.error("Logout error:", error);
-      toast.error("There was an error logging out. Please try again.");
+      toast.error("Error logging out, try again.");
     }
   };
 
@@ -124,50 +111,33 @@ function Router() {
   return (
     <>
       <Navbar />
-
       <main className="flex-grow">
         <Routes>
-          {/* Public */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<About />} />
 
-          {/* Protected */}
           <Route
             path="/donate"
-            element={
-              <ProtectedRoute>
-                <DonatePage />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute><DonatePage /></ProtectedRoute>}
           />
           <Route
             path="/request"
-            element={
-              <ProtectedRoute>
-                <RequestPage />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute><RequestPage /></ProtectedRoute>}
           />
           <Route
             path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
+            element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
           />
 
-          {/* Fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-
-      {/* hide footer on auth pages */}
-      {location.pathname !== "/login" &&
-        location.pathname !== "/register" && <Footer />}
+      {location.pathname !== "/login" && location.pathname !== "/register" && (
+        <Footer />
+      )}
     </>
   );
 }

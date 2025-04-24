@@ -19,11 +19,12 @@ const corsOptions = {
     credentials: true,
 };
 app.use(cors(corsOptions));
+
 const PORT = process.env.PORT;
-app.use('/rescue_bites/user', userRoutes);
-app.use('/rescue_bites/request', requestRoutes);
-app.use('/rescue_bites/donation', donationRoutes);
-app.use('/rescue_bites/delivery', deliveryRoutes);
+app.use('/rescue-bites/user', userRoutes);
+app.use('/rescue-bites/request', requestRoutes);
+app.use('/rescue-bites/donation', donationRoutes);
+app.use('/rescue-bites/delivery', deliveryRoutes);
 
 
 // const sessionOptions = {
@@ -39,11 +40,6 @@ app.use('/rescue_bites/delivery', deliveryRoutes);
 // };
 // app.use(session(sessionOptions));
 
-app.use('/', (req, res) => {
-    res.send("Hello World")
-});
-
-app.use(cors());
 
 app.listen(PORT, (req, res) => {
     connectDB();

@@ -10,7 +10,7 @@ import {
   getRequestsByOrganization,
   updateRequest,
   loginUser,
-  checkSession,
+  checkUserSession,
   logoutUser
 } from '../lib/donation-api';
 
@@ -195,7 +195,7 @@ export function useSession() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const sess = await checkSession();
+      const sess = await checkUserSession();
       setUser(sess.user);
       setOrganization(sess.organization);
     } catch {

@@ -1,19 +1,23 @@
 // src/lib/donation-api.js
+import { USER } from "@/Endpoints";
 import { apiRequest } from "./apiClient";
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
-/** @param {string} username @param {string} password */
-export function loginUser(username, password) {
-  return apiRequest("POST", "/api/login", { username, password })
-    .then(res => res.json());
+/** @param {object} userData*/
+export async function loginUser(userData) {
+  // console.log("loginUser", userData)
+  return await apiRequest("POST", `${USER}/login`, { userData})
+    .then(res =>{
+      return res;
+    });
 }
 
 /** @param {object} userData */
 export function registerUser(userData) {
   console.log("registerUser", userData)
-  return apiRequest("POST", "/api/register", userData)
-    .then(res => res.json());
+  return apiRequest("POST", `${USER}/register`, {userData})
+    .then(res => res);
 }
 
 /** @param {number} id */
@@ -23,16 +27,23 @@ export function getUser(id) {
 }
 
 /** Check session and return { user, organization } */
-export function checkSession() {
-  return apiRequest("GET", "/api/session")
-    .then(res => res.json());
+export function checkUserSession() {
+  return apiRequest("GET",`${USER}/session`)
+    .then(res => 
+      {
+      console.log("checkSession", res)
+      return res;
+    });
 }
 
 /** Log out current user */
 export function logoutUser() {
-  return apiRequest("POST", "/api/logout")
-    .then(res => res.text()); // or .json() depending on your API
-}
+  return apiRequest("GET", `${USER}/logout`)
+    .then(res => {
+      console.log("logoutUser", res)
+      return res;
+    });
+  }
 
 // ── Donations ────────────────────────────────────────────────────────────────
 

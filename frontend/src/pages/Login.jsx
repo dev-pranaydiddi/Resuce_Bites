@@ -1,138 +1,120 @@
-// Login.jsx
-import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { AuthContext } from "../App";     // adjust path as needed
-import { Heart } from "lucide-react";
+// src/pages/Login.jsx
+import React, { useContext, useEffect, useState } from "react";
+import { Label } from "../components/ui/label";
+import { Input } from "../components/ui/input";
+import { RadioGroup } from "../components/ui/radio-group";
+import { Button } from "../components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { USER } from "@/Endpoints";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading, setUser } from "@/store/authSlice";
+import { Heart, Loader2 } from "lucide-react";
+import { loginUser } from "@/lib/donation-api";
+import { AuthContext } from "@/App";
 
 const Login = () => {
+  const [input, setInput] = useState({
+    email: "",
+    password: "",
+  });
+  const { loading, user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
-  const { login, checkSession } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const {login} = useContext(AuthContext);
 
-  const [form, setForm] = useState({ username: "", password: "" });
-  const [errors, setErrors] = useState({ username: "", password: "" });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const validate = () => {
-    const errs = { username: "", password: "" };
-    if (!form.username.trim()) errs.username = "Username is required";
-    if (!form.password) errs.password = "Password is required";
-    setErrors(errs);
-    return !errs.username && !errs.password;
+  const changeEventHandler = (e) => {
+    setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setErrors(prev => ({ ...prev, [e.target.name]: "" }));
-  };
-
-  const handleSubmit = async (e) => {
+  const submitHandler = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
-
-    setIsLoading(true);
+    dispatch(setLoading(true));
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const contentType = res.headers.get("content-type") || "";
-      let data = {};
-
-      if (!res.ok) {
-        // Try to extract a JSON error message, otherwise read text
-        let errMsg;
-        if (contentType.includes("application/json")) {
-          const errData = await res.json();
-          errMsg = errData.message;
-        } else {
-          errMsg = await res.text();
-        }
-        throw new Error(errMsg || "Login failed");
+      const res = await loginUser(input);
+      console.log("loginUser in login.jsx", res);
+      if (res.success) {
+        login(res.user);
+        navigate("/");
+      } else {
+        toast.error(res.data.message || "Login failed");
       }
-
-      // Only parse JSON if it’s actually JSON
-      if (contentType.includes("application/json")) {
-        data = await res.json();
-      }
-
-      if (!data.user) {
-        throw new Error("No user data returned from server");
-      }
-
-      // Update context & re-check session
-      login(data.user, data.organization);
-      await checkSession();
-
-      toast.success(`Welcome back, ${data.user.name}!`);
-      navigate("/");
     } catch (err) {
-      console.error("Login error:", err);
-      toast.error(err.message || "Invalid credentials, please try again.");
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
     } finally {
-      setIsLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
+  // redirect if already logged in
+  useEffect(() => {
+    // if (user) navigate("/");
+  }, [user, navigate]);
+
   return (
-    <div className="min-h-screen flex absolute w-full   top-0 z-0 items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm bg-white rounded-lg shadow p-6">
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-2">
-            <Heart className="h-6 w-6 text-red-600" />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex flex-col items-center space-y-2">
+          <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
+            <Heart className="h-7 w-7 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold">Welcome to FoodShare</h2>
-          <p className="text-gray-600 text-sm">Enter your credentials below</p>
+          <h2 className="text-3xl font-extrabold">Already have an Account ?</h2>
+          <p className="text-gray-600">Course with the community.</p>
         </div>
+      <div className=" flex w-full justify-center items-center"> 
+        <form
+          onSubmit={submitHandler}
+          className="w-2/3 border border-gray-200 rounded-md p-4 my-10"
+        >
+          <h1 className="font-bold text-xl mb-5">Login</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-900 font-semibold mb-1">Username</label>
-            <input
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded bg-white focus:outline-none focus:ring focus:ring-red-500"
-              placeholder="Your username"
+          <div className="my-2 space-y-4">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={input.email}
+              name="email"
+              onChange={changeEventHandler}
+              placeholder="you@example.com"
             />
-            {errors.username && (
-              <p className="text-red-500 text-sm mt-1">{errors.username}</p>
-            )}
           </div>
 
-          <div>
-            <label className="block text-gray-900 font-semibold mb-1">Password</label>
-            <input
+          <div className="my-2 space-y-4">
+            <Label>Password</Label>
+            <Input
               type="password"
+              value={input.password}
               name="password"
-              value={form.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-red-500"
-              placeholder="Your password"
+              onChange={changeEventHandler}
+              placeholder="*************"
             />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-            )}
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <Button className="w-md my-4">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              <Button type="submit" className="md:w-2xs w-16 cursor-pointer my-4">
+                Login
+              </Button>
+            </div>
+          )}
 
-        <p className="mt-4 text-center text-gray-600 text-sm">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-red-600 hover:underline">
-            Register
-          </Link>
-        </p>
+          <span className="text-sm">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-blue-600">
+              Signup
+            </Link>
+          </span>
+        </form>
       </div>
     </div>
   );
