@@ -90,11 +90,12 @@ const DonatePage = () => {
   // Lookup address details on street blur
   const handleAddressLookup = async streetValue => {
     if (!streetValue) return;
+    const API_KEY = import.meta.env.VITE_GEOCODE_API_KEY; // Ensure you have this in your .env file
     try {
       const res = await fetch(
         `https://geocode.maps.co/search?q=${encodeURIComponent(
           streetValue
-        )}&api_key=6807d1104d96e778785875xfge6e61b`
+        )}&api_key=${API_KEY}`
       );
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
