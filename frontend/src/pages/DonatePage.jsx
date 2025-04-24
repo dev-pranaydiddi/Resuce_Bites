@@ -23,61 +23,47 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { useSelector } from "react-redux";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-// Frontend validation schema
+// Backend-aligned validation schema
 const donationFormSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  quantity: z.string().min(1, "Quantity is required"),
-  location: z.string().min(1, "Location is required"),
-  imageUrl: z.string().optional(),
-  donorId: z.number(),
-  pickupInstructions: z.string().optional(),
-  expiryDate: z.date().optional(),
-  foodType: z.string().optional(),
-  isUrgent: z.boolean().default(false),
+  name: z.string().min(1, "Name is required"),
+  foodType: z.enum(["FRUIT", "VEGETABLE", "DAIRY", "BAKED_GOODS", "MEAT", "OTHERS"]),
+  quantity: z.object({
+    amount: z.preprocess(val => parseFloat(val), z.number().min(0.1, "Min 0.1")),
+    unit: z.enum(["kg", "g", "l", "ml", "packets"]),
+  }),
+  pickUpAddress: z.object({
+    street: z.string().min(1, "Street is required"),
+    city: z.string().min(1, "City is required"),
+    state: z.string().min(1, "State is required"),
+    zip: z.string().min(1, "ZIP is required"),
+    country: z.string().min(1, "Country is required"),
+    Geolocation: z.object({
+      coordinates: z.object({
+        lat: z.preprocess(val => parseFloat(val), z.number()),
+        long: z.preprocess(val => parseFloat(val), z.number()),
+      }),
+    }),
+  }),
 });
-
-const foodTypes = [
-  { value: "bakery", label: "Bakery Items" },
-  { value: "produce", label: "Fresh Produce" },
-  { value: "prepared", label: "Prepared Meals" },
-  { value: "canned", label: "Canned Goods" },
-  { value: "dairy", label: "Dairy Products" },
-  { value: "meat", label: "Meat & Proteins" },
-  { value: "beverages", label: "Beverages" },
-  { value: "other", label: "Other" },
-];
 
 const DonatePage = () => {
   const [activeTab, setActiveTab] = useState("donate");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const user = useSelector((state) => state.auth.user);
   const { toast } = useToast();
   const navigate = useNavigate();
-    const { user, logout } = useContext(AuthContext);
-    const isAuthenticated = Boolean(user);
-    console.log("user", user);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -86,19 +72,58 @@ const DonatePage = () => {
   const form = useForm({
     resolver: zodResolver(donationFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      quantity: "",
-      location: "",
-      imageUrl: "",
-      donorId: user?.id || 0,
-      pickupInstructions: "",
+      name: "",
       foodType: "",
-      isUrgent: false,
+      quantity: { amount: "", unit: "" },
+      pickUpAddress: {
+        street: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+        Geolocation: { coordinates: { lat: "", long: "" } },
+      },
     },
   });
+  const { control, handleSubmit, setValue } = form;
 
-  const onSubmit = async (values) => {
+  // Lookup address details on street blur
+  const handleAddressLookup = async streetValue => {
+    if (!streetValue) return;
+    try {
+      const res = await fetch(
+        `https://geocode.maps.co/search?q=${encodeURIComponent(
+          streetValue
+        )}&api_key=6807d1104d96e778785875xfge6e61b`
+      );
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const first = data[0];
+        const addr = first.address || {};
+        // Autofill each field
+        setValue("pickUpAddress.street", addr.road || streetValue);
+        setValue(
+          "pickUpAddress.city",
+          addr.city || addr.town || addr.village || ""
+        );
+        setValue("pickUpAddress.state", addr.state || "");
+        setValue("pickUpAddress.zip", addr.postcode || "");
+        setValue("pickUpAddress.country", addr.country || "");
+        setValue(
+          "pickUpAddress.Geolocation.coordinates.lat",
+          parseFloat(first.lat) || 0
+        );
+        setValue(
+          "pickUpAddress.Geolocation.coordinates.long",
+          parseFloat(first.lon) || 0
+        );
+      }
+    } catch (err) {
+      console.error("Geocode lookup failed:", err);
+    }
+  };
+
+  const onSubmit = async values => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -108,11 +133,10 @@ const DonatePage = () => {
       navigate("/login");
       return;
     }
+
     setIsSubmitting(true);
     try {
-      // ensure donorId correctness
       values.donorId = user.id;
-      // call API
       await createDonation(values);
       toast({
         title: "Donation created",
@@ -124,7 +148,8 @@ const DonatePage = () => {
       console.error("Failed to create donation:", err);
       toast({
         title: "Failed to create donation",
-        description: "There was an error creating your donation. Please try again.",
+        description:
+          "There was an error creating your donation. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -136,32 +161,17 @@ const DonatePage = () => {
     <>
       <Helmet>
         <title>Donate Food | FoodShare</title>
-        <meta
-          name="description"
-          content="Donate excess food to organizations in need and help reduce food waste."
-        />
       </Helmet>
 
-      <div className="bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--primary))] py-10 px-4">
-        <div className="container mx-auto">
-          <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4">
-            Donate Food
-          </h1>
-          <p className="text-white text-lg max-w-2xl">
-            Share your excess food with those in need. List your available food items for local organizations to claim.
-          </p>
-        </div>
-      </div>
-
       <div className="container mx-auto py-8 px-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="donate">
-          <TabsList className="grid w-full max-w-md mx-auto mb-8 grid-cols-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
             <TabsTrigger value="donate">Create Donation</TabsTrigger>
             <TabsTrigger value="browse">Browse Donations</TabsTrigger>
           </TabsList>
 
           <TabsContent value="donate">
-            {!user.user ? (
+            {!user ? (
               <Card>
                 <CardHeader>
                   <CardTitle>Authentication Required</CardTitle>
@@ -171,19 +181,12 @@ const DonatePage = () => {
                 </CardHeader>
                 <CardContent className="flex justify-center gap-4">
                   <Button onClick={() => navigate("/login")}>Login</Button>
-                  <Button variant="outline" onClick={() => navigate("/register")}>Register</Button>
-                </CardContent>
-              </Card>
-            ) : user.user.role !== "DONOR" ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Organization Account</CardTitle>
-                  <CardDescription>
-                    Only donor accounts can create donations. Browse donations instead.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex justify-center">
-                  <Button onClick={() => setActiveTab("browse")}>Browse Available Donations</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/register")}
+                  >
+                    Register
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -196,66 +199,102 @@ const DonatePage = () => {
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form
+                      onSubmit={handleSubmit(onSubmit)}
+                      className="space-y-6"
+                    >
+                      {/* Name */}
                       <FormField
-                        control={form.control}
-                        name="title"
+                        control={control}
+                        name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Donation Title</FormLabel>
+                            <FormLabel>Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="E.g., Fresh Bakery Items" {...field} />
+                              <Input
+                                placeholder="Donation Name"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Food Type */}
+                      <FormField
+                        control={control}
+                        name="foodType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Food Type</FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[
+                                    "FRUIT",
+                                    "VEGETABLE",
+                                    "DAIRY",
+                                    "BAKED_GOODS",
+                                    "MEAT",
+                                    "OTHERS",
+                                  ].map(type => (
+                                    <SelectItem key={type} value={type}>
+                                      {type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Quantity */}
+                      <div className="grid grid-cols-2 gap-4">
                         <FormField
-                          control={form.control}
-                          name="quantity"
+                          control={control}
+                          name="quantity.amount"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Quantity</FormLabel>
+                              <FormLabel>Amount</FormLabel>
                               <FormControl>
-                                <Input placeholder="E.g., 20 loaves" {...field} />
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  placeholder="e.g., 2.5"
+                                  {...field}
+                                />
                               </FormControl>
-                              <FormDescription>Specify amount, weight, or servings</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
 
                         <FormField
-                          control={form.control}
-                          name="location"
+                          control={control}
+                          name="quantity.unit"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Location</FormLabel>
+                              <FormLabel>Unit</FormLabel>
                               <FormControl>
-                                <Input placeholder="E.g., Downtown" {...field} />
-                              </FormControl>
-                              <FormDescription>Where pickup will occur</FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="foodType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Food Type</FormLabel>
-                              <FormControl>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <SelectTrigger><SelectValue placeholder="Select food type" /></SelectTrigger>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select unit" />
+                                  </SelectTrigger>
                                   <SelectContent>
-                                    {foodTypes.map((type) => (
-                                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                                    {["kg","g","l","ml","packets"].map(u => (
+                                      <SelectItem key={u} value={u}>{u}</SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
@@ -264,86 +303,93 @@ const DonatePage = () => {
                             </FormItem>
                           )}
                         />
-
-                        <FormField
-                          control={form.control}
-                          name="expiryDate"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Expiry Date (optional)</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild><FormControl>
-                                  <Button variant="outline" className={cn("w-full text-left", !field.value && "text-muted-foreground")}>
-                                    {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl></PopoverTrigger>
-                                <PopoverContent className="p-0" align="start">
-                                  <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date() || date > new Date(new Date().setDate(new Date().getDate() + 30))} />
-                                </PopoverContent>
-                              </Popover>
-                              <FormDescription>Best before date</FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
 
+                      {/* Street with lookup */}
                       <FormField
-                        control={form.control}
-                        name="description"
+                        control={control}
+                        name="pickUpAddress.street"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Description</FormLabel>
+                            <FormLabel>Street</FormLabel>
                             <FormControl>
-                              <Textarea placeholder="Describe the food items" className="min-h-[120px]" {...field} />
+                              <Input
+                                placeholder="Street address"
+                                {...field}
+                                onBlur={e => handleAddressLookup(e.target.value)}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
 
-                      <FormField
-                        control={form.control}
-                        name="pickupInstructions"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Pickup Instructions (optional)</FormLabel>
-                            <FormControl><Textarea placeholder="Pickup details" {...field} /></FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {/* Auto-filled address fields */}
+                      {[
 
-                      <FormField
-                        control={form.control}
-                        name="imageUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Image URL (optional)</FormLabel>
-                            <FormControl><Input placeholder="Image link" {...field} /></FormControl>
-                            <FormDescription>Helps organizations identify your donation</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                        "city",
+                        "state",
+                        "zip",
+                        "country",
+                      ].map(name => (
+                        <FormField
+                          key={name}
+                          control={control}
+                          name={`pickUpAddress.${name}`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{name.charAt(0).toUpperCase() + name.slice(1)}</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder={name} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ))}
 
-                      <FormField
-                        control={form.control}
-                        name="isUrgent"
-                        render={({ field }) => (
-                          <FormItem className="flex items-center justify-between border p-4">
-                            <div>
-                              <FormLabel className="mb-0">Mark as Urgent</FormLabel>
-                              <FormDescription>Highlights for immediate pickup</FormDescription>
-                            </div>
-                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                          </FormItem>
-                        )}
-                      />
+                      {/* Geolocation */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={control}
+                          name="pickUpAddress.Geolocation.coordinates.lat"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Latitude</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.000001"
+                                  {...field}
+                                  placeholder="Lat"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={control}
+                          name="pickUpAddress.Geolocation.coordinates.long"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Longitude</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.000001"
+                                  {...field}
+                                  placeholder="Long"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
                       <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Creating Donation..." : "Create Donation"}
+                        {isSubmitting ? "Creating..." : "Create Donation"}
                       </Button>
                     </form>
                   </Form>
@@ -353,10 +399,7 @@ const DonatePage = () => {
           </TabsContent>
 
           <TabsContent value="browse">
-            <div className="container mx-auto mb-8">
-              <h2 className="text-2xl font-heading font-bold mb-6">Available Donations</h2>
-              <DonationsList />
-            </div>
+            <DonationsList />
           </TabsContent>
         </Tabs>
       </div>
