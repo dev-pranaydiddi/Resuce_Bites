@@ -11,17 +11,17 @@ import { Helmet } from "react-helmet";
 import DonationsList from "@/components/PageComponents/DonationsList";
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
+  CardContent,
 } from "@/components/ui/card";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -35,14 +35,29 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-// Backend-aligned validation schema
+// Validation schema including expiryTime
 const donationFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  foodType: z.enum(["FRUIT", "VEGETABLE", "DAIRY", "BAKED_GOODS", "MEAT", "OTHERS"]),
+  foodType: z.enum([
+    "FRUIT",
+    "VEGETABLE",
+    "DAIRY",
+    "BAKED_GOODS",
+    "MEAT",
+    "OTHERS",
+  ]),
   quantity: z.object({
-    amount: z.preprocess(val => parseFloat(val), z.number().min(0.1, "Min 0.1")),
+    amount: z
+      .preprocess((v) => parseFloat(v), z.number().min(0.1, "Min 0.1")),
     unit: z.enum(["kg", "g", "l", "ml", "packets"]),
   }),
+  description: z.string().min(1, "Description is required"),
+  expiryTime: z
+    .string()
+    .refine(
+      (val) => !isNaN(Date.parse(val)) && new Date(val) > new Date(),
+      { message: "Expiry time must be a future date/time" }
+    ),
   pickUpAddress: z.object({
     street: z.string().min(1, "Street is required"),
     city: z.string().min(1, "City is required"),
@@ -51,8 +66,8 @@ const donationFormSchema = z.object({
     country: z.string().min(1, "Country is required"),
     Geolocation: z.object({
       coordinates: z.object({
-        lat: z.preprocess(val => parseFloat(val), z.number()),
-        long: z.preprocess(val => parseFloat(val), z.number()),
+        lat: z.preprocess((v) => parseFloat(v), z.number()),
+        long: z.preprocess((v) => parseFloat(v), z.number()),
       }),
     }),
   }),
@@ -61,7 +76,7 @@ const donationFormSchema = z.object({
 const DonatePage = () => {
   const [activeTab, setActiveTab] = useState("donate");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const toast = useToast().toast;
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
@@ -75,6 +90,8 @@ const DonatePage = () => {
       name: "",
       foodType: "",
       quantity: { amount: "", unit: "" },
+      description: "",
+      expiryTime: "",
       pickUpAddress: {
         street: "",
         city: "",
@@ -85,38 +102,41 @@ const DonatePage = () => {
       },
     },
   });
-  const { control, handleSubmit, setValue } = form;
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = form;
 
-  // Lookup address details on street blur
-  const handleAddressLookup = async streetValue => {
+  // Autofill address via Maps.co
+  const handleAddressLookup = async (streetValue) => {
     if (!streetValue) return;
-    const API_KEY = import.meta.env.VITE_GEOCODE_API_KEY; // Ensure you have this in your .env file
     try {
       const res = await fetch(
         `https://geocode.maps.co/search?q=${encodeURIComponent(
           streetValue
-        )}&api_key=${API_KEY}`
+        )}`
       );
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        const first = data[0];
-        const addr = first.address || {};
-        // Autofill each field
-        setValue("pickUpAddress.street", addr.road || streetValue);
+        const { address = {}, lat, lon } = data[0];
+        setValue("pickUpAddress.street", address.road || streetValue);
         setValue(
           "pickUpAddress.city",
-          addr.city || addr.town || addr.village || ""
+          address.city || address.town || address.village || ""
         );
-        setValue("pickUpAddress.state", addr.state || "");
-        setValue("pickUpAddress.zip", addr.postcode || "");
-        setValue("pickUpAddress.country", addr.country || "");
+        setValue("pickUpAddress.state", address.state || "");
+        setValue("pickUpAddress.zip", address.postcode || "");
+        setValue("pickUpAddress.country", address.country || "");
         setValue(
           "pickUpAddress.Geolocation.coordinates.lat",
-          parseFloat(first.lat) || 0
+          parseFloat(lat) || 0
         );
         setValue(
           "pickUpAddress.Geolocation.coordinates.long",
-          parseFloat(first.lon) || 0
+          parseFloat(lon) || 0
         );
       }
     } catch (err) {
@@ -124,40 +144,42 @@ const DonatePage = () => {
     }
   };
 
-  const onSubmit = async values => {
+  const onSubmit = async (values) => {
     if (!user) {
       toast({
         title: "Authentication required",
         description: "Please log in to create a donation",
         variant: "destructive",
       });
-      navigate("/login");
-      return;
+      return navigate("/login");
     }
-
     setIsSubmitting(true);
     try {
-      values.donorId = user.id;
-      await createDonation(values);
+      const response = await fetch("/:userId/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...values, donorId: user.id }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save donation");
+      }
+      await response.json();
       toast({
         title: "Donation created",
-        description: "Your donation has been listed successfully",
+        description: "Your donation has been saved.",
       });
-      form.reset();
+      reset();
       setActiveTab("browse");
     } catch (err) {
-      console.error("Failed to create donation:", err);
+      console.error(err);
       toast({
-        title: "Failed to create donation",
-        description:
-          "There was an error creating your donation. Please try again.",
+        title: "Error",
+        description: "Could not save donation. Try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
+    setIsSubmitting(false);
   };
-
   return (
     <>
       <Helmet>
@@ -213,8 +235,8 @@ const DonatePage = () => {
                             <FormLabel>Name</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Donation Name"
                                 {...field}
+                                placeholder="Donation Name"
                               />
                             </FormControl>
                             <FormMessage />
@@ -245,7 +267,7 @@ const DonatePage = () => {
                                     "BAKED_GOODS",
                                     "MEAT",
                                     "OTHERS",
-                                  ].map(type => (
+                                  ].map((type) => (
                                     <SelectItem key={type} value={type}>
                                       {type}
                                     </SelectItem>
@@ -270,15 +292,14 @@ const DonatePage = () => {
                                 <Input
                                   type="number"
                                   step="0.1"
-                                  placeholder="e.g., 2.5"
                                   {...field}
+                                  placeholder="e.g., 2.5"
                                 />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-
                         <FormField
                           control={control}
                           name="quantity.unit"
@@ -306,7 +327,37 @@ const DonatePage = () => {
                         />
                       </div>
 
-                      {/* Street with lookup */}
+                      {/* Description */}
+                      <FormField
+                        control={control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Details" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Expiry Time */}
+                      <FormField
+                        control={control}
+                        name="expiryTime"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Expiry Time</FormLabel>
+                            <FormControl>
+                              <Input type="datetime-local" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Street Auto-Lookup */}
                       <FormField
                         control={control}
                         name="pickUpAddress.street"
@@ -315,9 +366,11 @@ const DonatePage = () => {
                             <FormLabel>Street</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Street address"
                                 {...field}
-                                onBlur={e => handleAddressLookup(e.target.value)}
+                                placeholder="Street address"
+                                onBlur={(e) =>
+                                  handleAddressLookup(e.target.value)
+                                }
                               />
                             </FormControl>
                             <FormMessage />
@@ -325,24 +378,16 @@ const DonatePage = () => {
                         )}
                       />
 
-                      {/* Auto-filled address fields */}
-                      {[
-
-                        "city",
-                        "state",
-                        "zip",
-                        "country",
-                      ].map(name => (
+                      {/* City, State, ZIP, Country */}
+                      {['city','state','zip','country'].map(name => (
                         <FormField
                           key={name}
                           control={control}
                           name={`pickUpAddress.${name}`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>{name.charAt(0).toUpperCase() + name.slice(1)}</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder={name} />
-                              </FormControl>
+                              <FormLabel>{name.charAt(0).toUpperCase()+name.slice(1)}</FormLabel>
+                              <FormControl><Input {...field} /></FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -362,7 +407,6 @@ const DonatePage = () => {
                                   type="number"
                                   step="0.000001"
                                   {...field}
-                                  placeholder="Lat"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -380,7 +424,6 @@ const DonatePage = () => {
                                   type="number"
                                   step="0.000001"
                                   {...field}
-                                  placeholder="Long"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -389,8 +432,13 @@ const DonatePage = () => {
                         />
                       </div>
 
-                      <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Creating..." : "Create Donation"}
+                      {/* Submit */}
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "Submitting..." : "Create Donation"}
                       </Button>
                     </form>
                   </Form>
@@ -400,7 +448,7 @@ const DonatePage = () => {
           </TabsContent>
 
           <TabsContent value="browse">
-            <DonationsList />
+            <DonationsList limit={null} showViewAll filter="all" />
           </TabsContent>
         </Tabs>
       </div>

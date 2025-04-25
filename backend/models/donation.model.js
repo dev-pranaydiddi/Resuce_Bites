@@ -87,14 +87,8 @@ const DonationSchema = new Schema({
         ref: 'User'
     },
     description: {
-        Notes: {
-            type: String,
-            trim: true
-        },
-        images: [{
-            url: String,
-            caption: String
-        }]
+        type: String,
+        
     }
 }, {
     timestamps: true,
