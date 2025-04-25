@@ -251,7 +251,7 @@ export default function DonatePage() {
                   </p>
                 )}
               </Card>
-            ) :user.userType !== "donor" ? (
+            ) :user.user.role === "DONOR" ? (
              
               <Card>
                 <CardHeader>
