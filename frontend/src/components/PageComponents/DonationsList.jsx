@@ -32,7 +32,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
   // filter, slice, and map into cards in one memo
   const { cards, totalCount } = useMemo(() => {
     const filteredData = [donations]
-      .filter(d => filter === 'all' || d.status === filter)
+      .filter(d => filter === 'AVAILABLE' || d.status === filter)
       .filter(d => {
         if (!searchTerm) return true;
         const lower = searchTerm.toLowerCase();
@@ -45,7 +45,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
       });
 
     const finalSet = limit ? filteredData.slice(0, limit) : filteredData;
-    // console.log("finalSet", finalSet[0]);
+    console.log("finalSet", finalSet);
     const cards = finalSet[0].map(d => (
       // console.log("donation", d)
       <DonationCard key={d._id} donation={d} /> // Log each donation object`

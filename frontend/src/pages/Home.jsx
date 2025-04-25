@@ -52,7 +52,6 @@ const Home = () => {
               </svg>
             </Link>
           </div>
-
           <DonationsList limit={3} showViewAll={true} filter="AVAILABLE" />
         </div>
       </section>

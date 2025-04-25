@@ -4,11 +4,19 @@ import { Button } from '@/components/ui/button';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 
 const DonationCard = ({ donation, onRequest }) => {
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
-  console.log("donation", user.user.role);
+  // console.log("donation", user.user.role);
+  const checkAuth = () => {
+    // const user = useSelector((state) => state.auth.user);
+    if(user == undefined || user == null ){
+      navigate('/login');
+    }
+  }
   const {
     name,
     foodType,
@@ -16,6 +24,7 @@ const DonationCard = ({ donation, onRequest }) => {
     pickUpAddress,
     expiryTime,
     status,
+    donor,
     _id
   } = donation;
 
@@ -26,6 +35,9 @@ const DonationCard = ({ donation, onRequest }) => {
   const expiryText = expiryTime
     ? formatDistanceToNow(parseISO(expiryTime), { addSuffix: true })
     : 'No expiry';
+    const userId = user?.user?._id;
+    const donorId = donor?._id;
+    console.log(userId,donorId)
 
   const getStatusBadge = () => {
     if (status === 'AVAILABLE') return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Available</span>;
@@ -36,7 +48,6 @@ const DonationCard = ({ donation, onRequest }) => {
     if (status === 'CANCELLED') return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Cancelled</span>;
     return null;
   };
-
   return (
     <div className="bg-neutral-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="p-6 flex flex-col h-full">
@@ -64,9 +75,13 @@ const DonationCard = ({ donation, onRequest }) => {
           <span className="text-sm text-neutral-600">Expires {expiryText}</span>
         </div>
 
+        {!user?.user?.role ?
+        (<div>
+
+        </div>):
         <div className="mt-auto">
-          {status === 'AVAILABLE' && user.user.role === "RECIPIENT" ?(
-              <Link to={`/request?id=${_id}`}>  
+          {status === 'AVAILABLE' && user?.user?.role === 'RECIPIENT' && user &&user?.user?._id != donor?._id ?(
+              <Link >  
                 <Button
                   size="sm"
                   className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
@@ -74,7 +89,7 @@ const DonationCard = ({ donation, onRequest }) => {
                   Request
                 </Button>
               </Link>
-          ):(status === 'AVAILABLE' && user.user.role === "DONOR") ? (
+          ):(status === 'AVAILABLE') && user?.user?.role === 'DONATION' && user?.user?._id == donor?._id? (
             <Button
               size="sm"
               className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
@@ -84,6 +99,7 @@ const DonationCard = ({ donation, onRequest }) => {
             </Button>
           ) : null}
         </div>
+}
       </div>
     </div>
   );
