@@ -1,16 +1,21 @@
 // src/lib/donation-api.js
-import { USER } from "@/Endpoints";
+import { DONATION, USER } from "@/Endpoints";
 import { apiRequest } from "./apiClient";
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 /** @param {object} userData*/
 export async function loginUser(userData) {
-  // console.log("loginUser", userData)
-  return await apiRequest("POST", `${USER}/login`, { userData})
-    .then(res =>{
+  console.log("loginUser", userData)
+  try{
+  const res = await apiRequest("POST", `${USER}/login`, { userData})
+      // console.log("loginUser", res)
       return res;
-    });
+  }
+  catch (err) {
+    // console.log("loginUser error", err);
+    return err;
+  }
 }
 
 /** @param {object} userData */
@@ -48,7 +53,16 @@ export function logoutUser() {
 // ── Donations ────────────────────────────────────────────────────────────────
 
 export function getAllDonations() {
-  return apiRequest("GET", "/api/donations").then(res => res.json());
+  try{
+  const res = apiRequest("GET", `${DONATION}/all`);
+  console.log("getAllDonations", res)
+  return res;
+}
+catch (err) {
+  console.log("getAllDonations error", err);
+  return err;
+}
+
 }
 
 /** @param {number} id */
@@ -63,10 +77,18 @@ export function getDonationsByDonor(donorId) {
     .then(res => res.json());
 }
 
-/** @param {object} donationData */
-export function createDonation(donationData) {
-  return apiRequest("POST", "/api/donations", donationData)
-    .then(res => res.json());
+/** @param {object} donationData @param {string} donorId */
+export async function createDonation(donationData , donorId) {
+  try { 
+  const res = await apiRequest("POST", `${DONATION}/new`, donationData);
+  console.log("createDonation", donationData)
+  // const res = 1;
+    return res;
+}
+  catch (err) {
+    console.log("createDonation error", err);
+    return err
+  }
 }
 
 /** @param {number} id @param {object} donationData */

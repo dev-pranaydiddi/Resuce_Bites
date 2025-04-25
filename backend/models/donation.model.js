@@ -50,10 +50,9 @@ const DonationSchema = new Schema({
             }
         }
     },
-    pickupTime: {
+    pickUpTime: {
         type: Date,
-        required: true
-        
+        // required: true
     },
     expiryTime: {
         type: Date,
@@ -88,7 +87,6 @@ const DonationSchema = new Schema({
     },
     description: {
         type: String,
-        
     }
 }, {
     timestamps: true,

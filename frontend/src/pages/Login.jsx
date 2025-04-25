@@ -32,16 +32,17 @@ const Login = () => {
     e.preventDefault();
     dispatch(setLoading(true));
     try {
+      console.log("input", input);
       const res = await loginUser(input);
       console.log("loginUser in login.jsx", res);
-      if (res.success) {
+      if (res?.success) {
         login(res.user);
         navigate("/");
       } else {
-        toast.error(res.data.message || "Login failed");
+        toast.error(res.response.data.message || "Login failed");
       }
     } catch (err) {
-      console.error(err);
+      console.log("loginUser error", err);
       toast.error(
         err.response?.data?.message || "Something went wrong. Please try again."
       );

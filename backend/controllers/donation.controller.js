@@ -4,10 +4,11 @@ import { User } from '../models/user.model.js';
 import { getUser } from './user.controller.js';
 export const createDonation = async (req, res) => {
     try {
-        const { foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, description, name } = req.body;
+        const { foodType, quantity, pickUpAddress,  expiryTime,description, name } = req.body;
 
         // Check required fields
-        if (!name || !foodType || !quantity || !pickupAddress || !pickupTime || !pickupLocationName || !expiryTime || !status || !description) {
+        console.log("Name:", name, "Food Type:", foodType, "Quantity:", quantity, "Pickup Address:", pickUpAddress, "Expiry Time:", expiryTime, "Description:", description);
+        if (!name || !foodType || !quantity || !pickUpAddress || !expiryTime || !description) {
             return res.status(400).json({ message: "Please provide all the required fields", success: false });
         }
         const donor = req.id;
@@ -26,13 +27,13 @@ export const createDonation = async (req, res) => {
             }
         });
 
-        console.log("Existing Donation:", existingDonation);
-        console.log("name:", name);
+        // console.log("Existing Donation:", existingDonation);
+        // console.log("name:", name);
         // Get the donor's ID from the authenticated request (make sure your authentication middleware sets req.id)
 
 
         // Create a new Donation document using your Donation model
-        const donation = new Donation({ name, foodType, quantity, pickupAddress, pickupTime, pickupLocationName, expiryTime, status, description, donor });
+        const donation = new Donation({ name, foodType, quantity, pickUpAddress, expiryTime, description, donor });
         console.log("Donation:", donation);
         if (donation && user.role === 'DONOR') {
             // create a new request using the request model
@@ -49,10 +50,11 @@ export const createDonation = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized to create a donation", success: false });
         }
         // Respond with success
-        res.status(201).json({ message: "Donation created successfully", success: true, donation: donation, user });
+        console.log("Donation:", donation);
+        return res.status(201).json({ message: "Donation created successfully", success: true, donation: donation, user });
     } catch (err) {
         console.error("Error creating donation:", err);
-        res.status(500).json({ message: "Server error", error: err.message });
+        return res.status(500).json({ message: "Server error", error: err.message });
     }
 };
 

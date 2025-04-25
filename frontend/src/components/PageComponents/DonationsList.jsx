@@ -12,6 +12,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Fetch donations once
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
@@ -29,6 +30,26 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
     return () => { isMounted = false; };
   }, []);
 
+  // Always compute filtered and displayed lists to keep hooks order
+  const filtered = useMemo(() => {
+    console.log(typeof(donations));
+    return donations
+      .filter(d => filter === 'all' || d.status === filter)
+      .filter(d => {
+        if (!searchTerm) return true;
+        const lower = searchTerm.toLowerCase();
+        return (
+          d.title.toLowerCase().includes(lower) ||
+          d.description.toLowerCase().includes(lower) ||
+          d.location.toLowerCase().includes(lower) ||
+          (d.foodType && d.foodType.toLowerCase().includes(lower))
+        );
+      });
+  }, [donations, filter, searchTerm]);
+
+  const displayed = limit ? filtered.slice(0, limit) : filtered;
+
+  // Loading state
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -51,30 +72,14 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
     );
   }
 
+  // Error state
   if (error) {
     return <p className="text-center text-red-500">Failed to load donations.</p>;
   }
 
-  // apply status filter
-  const filtered = useMemo(() => (
-    donations
-      .filter(d => filter === 'all' || d.status === filter)
-      .filter(d => {
-        if (!searchTerm) return true;
-        const lower = searchTerm.toLowerCase();
-        return (
-          d.title.toLowerCase().includes(lower) ||
-          d.description.toLowerCase().includes(lower) ||
-          d.location.toLowerCase().includes(lower) ||
-          (d.foodType && d.foodType.toLowerCase().includes(lower))
-        );
-      })
-  ), [donations, filter, searchTerm]);
-
-  const displayed = limit ? filtered.slice(0, limit) : filtered;
-
   return (
     <div>
+      {/* Search bar when not limited */}
       {!limit && (
         <div className="mb-6 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -90,6 +95,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
         </div>
       )}
 
+      {/* No results */}
       {displayed.length === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-xl font-semibold mb-2">No donations found</h3>
@@ -100,6 +106,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
           </p>
         </div>
       ) : (
+        /* Donation grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayed.map(d => (
             <DonationCard key={d.id} donation={d} />
@@ -107,6 +114,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
         </div>
       )}
 
+      {/* View all link */}
       {showViewAll && filtered.length > (limit || 0) && (
         <div className="mt-8 text-center">
           <Link
