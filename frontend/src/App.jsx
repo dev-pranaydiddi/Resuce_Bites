@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 // Endpoints
 import { USER } from "./Endpoints";
 // Redux
-import { setUser  } from "./store/authSlice";
+import { setUser } from "./store/authSlice";
 
 // Pages
 import Home from "./pages/Home";
@@ -50,12 +50,14 @@ function AuthProvider({ children }) {
 
   const checkSession = async () => {
     try {
-      const  data  = await checkUserSession();
+      const data = await checkUserSession();
       if (data.success) {
-        dispatch(setUser({
-          user: data.user,
-          organization: data.organization || null,
-        }));
+        dispatch(
+          setUser({
+            user: data.user,
+            organization: data.organization || null,
+          })
+        );
         return true;
       } else {
         dispatch(setUser(null));
@@ -79,10 +81,10 @@ function AuthProvider({ children }) {
 
   const login = (userData, orgData) => {
     console.log("login", userData);
-    dispatch(
-      setUser({ user: userData, organization: orgData || null })
+    dispatch(setUser({ user: userData, organization: orgData || null }));
+    toast.success(
+      `Welcome back, ${userData.name.first} ${userData.name.last}!`
     );
-    toast.success(`Welcome back, ${userData.name.first} ${userData.name.last}!`);
   };
 
   const logout = async () => {
@@ -121,15 +123,27 @@ function Router() {
 
           <Route
             path="/donate"
-            element={<ProtectedRoute><DonatePage /></ProtectedRoute>}
+            element={
+              <ProtectedRoute>
+                <DonatePage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/request"
-            element={<ProtectedRoute><RequestPage /></ProtectedRoute>}
+            element={
+              <ProtectedRoute>
+                <RequestPage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/dashboard"
-            element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
           />
 
           <Route path="*" element={<NotFound />} />

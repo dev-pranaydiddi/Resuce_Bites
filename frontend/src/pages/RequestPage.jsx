@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { AuthContext } from "../App";                     // adjust path
-import { getDonation, getAllDonations, createRequest } from "../lib/donation-api"; // adjust path
+import { AuthContext } from "../App"; // adjust path
+import {
+  getDonation,
+  getAllDonations,
+  createRequest,
+} from "../lib/donation-api"; // adjust path
 
 export default function RequestPage() {
   const navigate = useNavigate();
@@ -73,9 +77,12 @@ export default function RequestPage() {
     return (
       <div className="container mx-auto p-8">
         <div className="bg-white rounded shadow p-6 max-w-lg mx-auto">
-          <h2 className="text-xl font-bold mb-2">Organization Account Required</h2>
+          <h2 className="text-xl font-bold mb-2">
+            Organization Account Required
+          </h2>
           <p className="mb-4">
-            Your account is a donor. To request, you must register as an organization.
+            Your account is a donor. To request, you must register as an
+            organization.
           </p>
           <div className="flex gap-4">
             <Link to="/donate">
@@ -166,7 +173,9 @@ export default function RequestPage() {
 
         <div className="mt-6">
           <Link to="/request">
-            <button className="text-gray-600 hover:underline">&larr; Back to list</button>
+            <button className="text-gray-600 hover:underline">
+              &larr; Back to list
+            </button>
           </Link>
         </div>
       </div>

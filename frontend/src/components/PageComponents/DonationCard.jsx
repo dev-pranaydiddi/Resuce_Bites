@@ -1,11 +1,10 @@
-import React from 'react';
-import { MapPin, Clock, Tag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { formatDistanceToNow, parseISO } from 'date-fns';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-
+import React from "react";
+import { MapPin, Clock, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { formatDistanceToNow, parseISO } from "date-fns";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const DonationCard = ({ donation, onRequest }) => {
   const navigate = useNavigate();
@@ -13,10 +12,10 @@ const DonationCard = ({ donation, onRequest }) => {
   // console.log("donation", user.user.role);
   const checkAuth = () => {
     // const user = useSelector((state) => state.auth.user);
-    if(user == undefined || user == null ){
-      navigate('/login');
+    if (user == undefined || user == null) {
+      navigate("/login");
     }
-  }
+  };
   const {
     name,
     foodType,
@@ -25,27 +24,63 @@ const DonationCard = ({ donation, onRequest }) => {
     expiryTime,
     status,
     donor,
-    _id
+    _id,
   } = donation;
 
-  const addressStr = [pickUpAddress.street, pickUpAddress.city, pickUpAddress.state, pickUpAddress.zip, pickUpAddress.country]
+  const addressStr = [
+    pickUpAddress.street,
+    pickUpAddress.city,
+    pickUpAddress.state,
+    pickUpAddress.zip,
+    pickUpAddress.country,
+  ]
     .filter(Boolean)
-    .join(', ');
+    .join(", ");
 
   const expiryText = expiryTime
     ? formatDistanceToNow(parseISO(expiryTime), { addSuffix: true })
-    : 'No expiry';
-    const userId = user?.user?._id;
-    const donorId = donor?._id;
-    console.log(userId,donorId)
+    : "No expiry";
+  const userId = user?.user?._id;
+  const donorId = donor?._id;
+  console.log(userId, donorId);
 
   const getStatusBadge = () => {
-    if (status === 'AVAILABLE') return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Available</span>;
-    if (status === 'RESERVED') return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Reserved</span>;
-    if (status === 'IN_TRANSIT') return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">In Transit</span>;
-    if (status === 'DELIVERED') return <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Delivered</span>;
-    if (status === 'EXPIRED') return <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded-full text-xs">Expired</span>;
-    if (status === 'CANCELLED') return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Cancelled</span>;
+    if (status === "AVAILABLE")
+      return (
+        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+          Available
+        </span>
+      );
+    if (status === "RESERVED")
+      return (
+        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+          Reserved
+        </span>
+      );
+    if (status === "IN_TRANSIT")
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+          In Transit
+        </span>
+      );
+    if (status === "DELIVERED")
+      return (
+        <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">
+          Delivered
+        </span>
+      );
+    if (status === "EXPIRED")
+      return (
+        <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded-full text-xs">
+          Expired
+        </span>
+      );
+    if (status === "CANCELLED")
+      return (
+        <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+          Cancelled
+        </span>
+      );
     return null;
   };
   return (
@@ -62,7 +97,9 @@ const DonationCard = ({ donation, onRequest }) => {
         </div>
 
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-neutral-800 font-semibold">{quantity.amount} {quantity.unit}</span>
+          <span className="text-sm text-neutral-800 font-semibold">
+            {quantity.amount} {quantity.unit}
+          </span>
         </div>
 
         <div className="flex items-center gap-2 mb-4">
@@ -75,13 +112,15 @@ const DonationCard = ({ donation, onRequest }) => {
           <span className="text-sm text-neutral-600">Expires {expiryText}</span>
         </div>
 
-        {!user?.user?.role ?
-        (<div>
-
-        </div>):
-        <div className="mt-auto">
-          {status === 'AVAILABLE' && user?.user?.role === 'RECIPIENT' && user &&user?.user?._id != donor?._id ?(
-              <Link >  
+        {!user?.user?.role ? (
+          <div></div>
+        ) : (
+          <div className="mt-auto">
+            {status === "AVAILABLE" &&
+            user?.user?.role === "RECIPIENT" &&
+            user &&
+            user?.user?._id != donor?._id ? (
+              <Link>
                 <Button
                   size="sm"
                   className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
@@ -89,17 +128,19 @@ const DonationCard = ({ donation, onRequest }) => {
                   Request
                 </Button>
               </Link>
-          ):(status === 'AVAILABLE') && user?.user?.role === 'DONATION' && user?.user?._id == donor?._id? (
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
-              onClick={() => onRequest(donation)}
-            >
-              Edit Donation
-            </Button>
-          ) : null}
-        </div>
-}
+            ) : status === "AVAILABLE" &&
+              user?.user?.role === "DONATION" &&
+              user?.user?._id == donor?._id ? (
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
+                onClick={() => onRequest(donation)}
+              >
+                Edit Donation
+              </Button>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

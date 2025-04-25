@@ -85,15 +85,21 @@ const donationFormSchema = z.object({
 });
 
 export default function DonatePage() {
-  const [activeTab, setActiveTab] = useState("donate");
+  const [activeTab, setActiveTab] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countries, setCountries] = useState([]);
   const [loadingCountries, setLoadingCountries] = useState(true);
   const [noResults, setNoResults] = useState(false);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-
+  
   useEffect(() => {
+    if (user.user.role == "DONOR"){
+      setActiveTab("donate")
+    }
+    else{
+      setActiveTab("browse")
+    }
     window.scrollTo(0, 0);
   }, []);
 
@@ -224,7 +230,8 @@ export default function DonatePage() {
       <div className="container mx-auto md:w-4xl sm:w-3xl w-full py-8 px-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="donate">Create Donation</TabsTrigger>
+          {user.user.role == "DONOR" &&
+            (<TabsTrigger value="donate">Create Donation</TabsTrigger>)}
             <TabsTrigger value="browse">Browse Donations</TabsTrigger>
           </TabsList>
           <TabsContent value="donate">
@@ -251,7 +258,7 @@ export default function DonatePage() {
                   </p>
                 )}
               </Card>
-            ) :user.userType !== "donor" ? (
+            ) :user.user.role == "DONOR" ? (
              
               <Card>
                 <CardHeader>
