@@ -12,14 +12,13 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Fetch donations once
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
     getAllDonations()
       .then(data => {
-        if (isMounted) setDonations(data);
-      })
+        if (isMounted){ setDonations(data.donations || []);
+  console.log("donations", data.donations);}})
       .catch(err => {
         console.error('Failed to fetch donations:', err);
         if (isMounted) setError(err);
@@ -30,26 +29,31 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
     return () => { isMounted = false; };
   }, []);
 
-  // Always compute filtered and displayed lists to keep hooks order
-  const filtered = useMemo(() => {
-    console.log(typeof(donations));
-    return donations
+  // filter, slice, and map into cards in one memo
+  const { cards, totalCount } = useMemo(() => {
+    const filteredData = [donations]
       .filter(d => filter === 'all' || d.status === filter)
       .filter(d => {
         if (!searchTerm) return true;
         const lower = searchTerm.toLowerCase();
         return (
-          d.title.toLowerCase().includes(lower) ||
-          d.description.toLowerCase().includes(lower) ||
-          d.location.toLowerCase().includes(lower) ||
-          (d.foodType && d.foodType.toLowerCase().includes(lower))
+          d.title?.toLowerCase().includes(lower) ||
+          d.description?.toLowerCase().includes(lower) ||
+          d.location?.toLowerCase().includes(lower) ||
+          (typeof d.foodType === 'string' && d.foodType.toLowerCase().includes(lower))
         );
       });
-  }, [donations, filter, searchTerm]);
 
-  const displayed = limit ? filtered.slice(0, limit) : filtered;
+    const finalSet = limit ? filteredData.slice(0, limit) : filteredData;
+    // console.log("finalSet", finalSet[0]);
+    const cards = finalSet[0].map(d => (
+      // console.log("donation", d)
+      <DonationCard key={d._id} donation={d} /> // Log each donation object`
+    ));
+    return { cards, totalCount: filteredData.length };
+  }, [donations, filter, searchTerm, limit]);
 
-  // Loading state
+  // Loading
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -72,14 +76,13 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
     );
   }
 
-  // Error state
+  // Error
   if (error) {
     return <p className="text-center text-red-500">Failed to load donations.</p>;
   }
 
   return (
     <div>
-      {/* Search bar when not limited */}
       {!limit && (
         <div className="mb-6 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -95,8 +98,7 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
         </div>
       )}
 
-      {/* No results */}
-      {displayed.length === 0 ? (
+      {totalCount === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-xl font-semibold mb-2">No donations found</h3>
           <p className="text-neutral-600">
@@ -106,16 +108,12 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
           </p>
         </div>
       ) : (
-        /* Donation grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayed.map(d => (
-            <DonationCard key={d.id} donation={d} />
-          ))}
+          {cards}
         </div>
       )}
 
-      {/* View all link */}
-      {showViewAll && filtered.length > (limit || 0) && (
+      {showViewAll && totalCount > (limit || 0) && (
         <div className="mt-8 text-center">
           <Link
             to="/donate"

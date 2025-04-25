@@ -251,6 +251,20 @@ export default function DonatePage() {
                   </p>
                 )}
               </Card>
+            ) :user.userType !== "donor" ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Organization Account</CardTitle>
+                  <CardDescription>
+                    Your account is registered as an organization. Only donor accounts can create donations.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                  <Button onClick={() => setActiveTab("browse")}>
+                    Browse Available Donations
+                  </Button>
+                </CardContent>
+              </Card>
             ) : (
               <Card>
                 <CardHeader>

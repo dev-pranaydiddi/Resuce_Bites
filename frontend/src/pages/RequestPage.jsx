@@ -8,7 +8,7 @@ export default function RequestPage() {
   const { user, organization } = useContext(AuthContext);
   const { search } = useLocation();
   const params = new URLSearchParams(search);
-  const donationId = params.has("id") ? parseInt(params.get("id"), 10) : null;
+  const donationId = params.has("_id") ? parseInt(params.get("_id"), 10) : null;
 
   const [donations, setDonations] = useState([]);
   const [selectedDonation, setSelectedDonation] = useState(null);

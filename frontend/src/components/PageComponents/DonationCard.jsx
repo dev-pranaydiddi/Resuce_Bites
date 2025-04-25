@@ -1,82 +1,88 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
 
 const DonationCard = ({ donation, onRequest }) => {
+  const user = useSelector((state) => state.auth.user);
+  console.log("donation", user.user.role);
+  const {
+    name,
+    foodType,
+    quantity,
+    pickUpAddress,
+    expiryTime,
+    status,
+    _id
+  } = donation;
+
+  const addressStr = [pickUpAddress.street, pickUpAddress.city, pickUpAddress.state, pickUpAddress.zip, pickUpAddress.country]
+    .filter(Boolean)
+    .join(', ');
+
+  const expiryText = expiryTime
+    ? formatDistanceToNow(parseISO(expiryTime), { addSuffix: true })
+    : 'No expiry';
+
   const getStatusBadge = () => {
-    if (donation.isUrgent) {
-      return <span className="badge-urgent">Urgent</span>;
-    }
-    
-    if (donation.status === 'available') {
-      return <span className="badge-new">New</span>;
-    }
-    
-    if (donation.status === 'reserved') {
-      return <span className="badge-verified">Reserved</span>;
-    }
-    
+    if (status === 'AVAILABLE') return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Available</span>;
+    if (status === 'RESERVED') return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Reserved</span>;
+    if (status === 'IN_TRANSIT') return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">In Transit</span>;
+    if (status === 'DELIVERED') return <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Delivered</span>;
+    if (status === 'EXPIRED') return <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded-full text-xs">Expired</span>;
+    if (status === 'CANCELLED') return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Cancelled</span>;
     return null;
-  };
-  
-  const getTimeAgo = () => {
-    try {
-      const date = new Date(donation.createdAt);
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch {
-      return 'Recently';
-    }
   };
 
   return (
     <div className="bg-neutral-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-      {donation.imageUrl && (
-        <img
-          src={donation.imageUrl}
-          alt={donation.title}
-          className="w-full h-48 object-cover object-center"
-        />
-      )}
-      <div className="p-6">
+      <div className="p-6 flex flex-col h-full">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="font-heading font-semibold text-xl">{donation.title}</h3>
+          <h3 className="font-heading font-semibold text-xl">{name}</h3>
           {getStatusBadge()}
         </div>
-        <p className="text-neutral-600 mb-4">{donation.description}</p>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <MapPin className="h-4 w-4 text-[hsl(var(--primary))] mr-2" />
-            <span className="text-sm text-neutral-600">{donation.location}</span>
-          </div>
-          <div className="flex items-center">
-            <Clock className="h-4 w-4 text-[hsl(var(--accent))] mr-2" />
-            <span className="text-sm text-neutral-600">Posted {getTimeAgo()}</span>
-          </div>
+
+        <div className="flex items-center gap-2 mb-2">
+          <Tag className="h-4 w-4 text-neutral-600" />
+          <span className="text-sm text-neutral-600 uppercase">{foodType}</span>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-neutral-800 font-semibold">{donation.quantity}</span>
-          {donation.status === 'available' && (
-            onRequest ? (
-              <Button
-                onClick={onRequest}
-                size="sm"
-                className="bg-primary hover:bg-[hsl(var(--primary-dark))] text-white rounded-full"
-              >
-                Request
-              </Button>
-            ) : (
-              <Link to={`/request?id=${donation.id}`}>  
+
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-sm text-neutral-800 font-semibold">{quantity.amount} {quantity.unit}</span>
+        </div>
+
+        <div className="flex items-center gap-2 mb-4">
+          <MapPin className="h-4 w-4 text-neutral-600" />
+          <span className="text-sm text-neutral-600">{addressStr}</span>
+        </div>
+
+        <div className="flex items-center gap-2 mb-6">
+          <Clock className="h-4 w-4 text-neutral-600" />
+          <span className="text-sm text-neutral-600">Expires {expiryText}</span>
+        </div>
+
+        <div className="mt-auto">
+          {status === 'AVAILABLE' && user.user.role === "RECIPIENT" ?(
+              <Link to={`/request?id=${_id}`}>  
                 <Button
                   size="sm"
-                  className="bg-primary hover:bg-[hsl(var(--primary-dark))] text-white rounded-full"
+                  className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
                 >
                   Request
                 </Button>
               </Link>
-            )
-          )}
+          ):(status === 'AVAILABLE' && user.user.role === "DONOR") ? (
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
+              onClick={() => onRequest(donation)}
+            >
+              Edit Donation
+            </Button>
+          ) : null}
         </div>
       </div>
     </div>
