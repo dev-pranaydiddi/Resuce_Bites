@@ -67,7 +67,16 @@ catch (err) {
 
 /** @param {number} id */
 export function getDonation(id) {
-  return apiRequest("GET", `/api/donations/${id}`).then(res => res.json());
+  try{
+    const res = apiRequest("GET", `${DONATION}/${id}`);
+
+    console.log("Edit Donation", res)
+    return res;
+  }
+  catch (err) {
+    console.log("Edit Donation error", err);
+    return err;
+  }
 }
 
 
@@ -93,8 +102,16 @@ export async function createDonation(donationData , donorId) {
 
 /** @param {number} id @param {object} donationData */
 export function updateDonation(id, donationData) {
-  return apiRequest("PUT", `/api/donations/${id}`, donationData)
-    .then(res => res.json());
+  try{
+    const res = apiRequest("PUT", `${DONATION}/${id}`);
+
+    console.log("Update Donation", res)
+    return res;
+  }
+  catch (err) {
+    console.log("Edit Donation error", err);
+    return err;
+  }
 }
 
 // ── Requests ─────────────────────────────────────────────────────────────────
