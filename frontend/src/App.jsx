@@ -33,6 +33,7 @@ import Navbar from "./components/PageComponents/Navbar";
 import Footer from "./components/PageComponents/Footer";
 import ProtectedRoute from "./components/PageComponents/ProtectedRoute";
 import { checkUserSession, logoutUser } from "./lib/donation-api";
+import AppliedRequests from "./components/PageComponents/requests/appliedRequests";
 
 // Auth context
 export const AuthContext = createContext({
@@ -152,10 +153,10 @@ function Router() {
           />
           
           <Route
-            path="/request"
+            path="/request/:requestId"
             element={
               <ProtectedRoute>
-                <RequestPage />
+                <AppliedRequests />
               </ProtectedRoute>
             }
           />

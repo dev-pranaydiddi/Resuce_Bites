@@ -1,5 +1,5 @@
 // src/lib/donation-api.js
-import { DONATION, USER } from "@/Endpoints";
+import { DONATION, USER,REQUEST } from "@/Endpoints";
 import { apiRequest } from "./apiClient";
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -116,13 +116,37 @@ export function updateDonation(id, donationData) {
 
 // ── Requests ─────────────────────────────────────────────────────────────────
 
-/** @param {object} requestData */
-export function createRequest(requestData) {
-  return apiRequest("POST", "/api/requests", requestData)
-    .then(res => res.json());
+/**   @param {string} donationId*/
+export function applyRequest(donationId) {
+  try{
+    console.log("applyRequest", donationId)
+    console.log("applyRequest", `${REQUEST}/apply/${donationId}`)
+    const res = apiRequest("POST", `${REQUEST}/apply/${donationId}`,{donationId});
+    console.log("applyRequest response", res)
+    return res;
+  }
+  catch(err){
+    console.log()
+  }
+
+    // .then(res => res.json());
 }
 
-/** @param {number} id @param {object} requestData */
+/** @param {string} userId  */
+export function getAppliedRequests(userId) {
+  try{
+  console.log("getAppliedRequests", userId);
+  console.log("getAppliedRequests", `${REQUEST}/${userId}/all`)
+  const res = apiRequest("GET", `${REQUEST}/${userId}/all`)
+    return res;
+}
+  catch(err){
+    console.log("getAppliedRequests error", err);
+    return err;
+  }
+}
+
+/** @param {number} id @param {objec} requestData */
 export function updateRequest(id, requestData) {
   return apiRequest("PUT", `/api/requests/${id}`, requestData)
     .then(res => res.json());

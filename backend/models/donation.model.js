@@ -60,7 +60,7 @@ const DonationSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['AVAILABLE', 'RESERVED', 'IN_TRANSIT', 'DELIVERED', 'EXPIRED', 'CANCELLED'],
+        enum: ['AVAILABLE', 'RESERVED', 'DELIVERED', 'EXPIRED', 'CANCELLED'],
         required: true,
         default: 'AVAILABLE'
     },

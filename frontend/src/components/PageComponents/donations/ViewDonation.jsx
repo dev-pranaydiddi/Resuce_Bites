@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { MapPin, Clock, Tag, BaggageClaim, Pencil, ArrowBigLeft } from "lucide-react";
+import {
+  MapPin,
+  Clock,
+  Tag,
+  BaggageClaim,
+  Pencil,
+  ArrowBigLeft,
+} from "lucide-react";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { getDonation } from "@/lib/donation-api";
+import { applyRequest, getDonation } from "@/lib/donation-api";
+import { toast } from "sonner";
 
 export default function ViewDonation() {
   const { donationId } = useParams();
@@ -57,7 +65,31 @@ export default function ViewDonation() {
     ? formatDistanceToNow(parseISO(createdAt), { addSuffix: true })
     : "Recently";
 
-  const isOwner = user?.user?.role === "DONOR" && user.user?._id === donor._id; 
+  const isOwner = user?.user?.role === "DONOR" && user.user?._id === donor._id;
+  const isRecipient = user?.user?.role === "RECIPIENT";
+  const applingRequest = async() => {
+try {
+  const donationId = _id;
+      const res = await applyRequest(donationId);
+      console.log('response of res in view',res);
+      const requestid = res?.request?._id;
+      if(res.success){
+         toast.success(res?.message); 
+        navigate(`/request/${requestid}`);
+      }
+      else{
+        toast.error(res?.response?.data?.message)
+      }
+
+    } catch (err) {
+      console.error(err);
+      ("Failed to apply for request. Please try again.");
+    }
+    // when runs then the request data is manipulated while clicked by a recipient
+    // console.log("Request applied for donation:", _id);
+    // navigate(`/${}/requests`);
+  };
+
   const getStatusBadge = () => {
     const base = "inline-block px-3 py-1 rounded-full text-xs font-semibold";
     const map = {
@@ -97,65 +129,83 @@ export default function ViewDonation() {
     <div className=" max-w-full flex justify-center item-center h-screen  ">
       {/* Header */}
       <div className="h-[400px] max-w-2xl flex flex-col justify-center my-auto bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
-      <div className="flex flex-col  md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-1">{name}</h1>
-          <p className="text-sm text-gray-500">Posted {createdText}</p>
+        <div className="flex flex-col  md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">{name}</h1>
+            <p className="text-sm text-gray-500">Posted {createdText}</p>
+          </div>
+          {getStatusBadge()}
         </div>
-        {getStatusBadge()}
-      </div>
 
-      {/* Description */}
-      {description && (
-        <p className="text-neutral-700 mb-6 leading-relaxed">{description}</p>
-      )}
-
-      {/* Info Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Tag className="h-5 w-5 text-neutral-600" />
-            {getFoodBadge()}
-          </div>
-          <div className="flex items-center gap-2">
-            <BaggageClaim className="h-5 w-5 text-neutral-600" />
-            <span className="text-neutral-800 font-semibold">
-              {amount} {unit}
-            </span>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-neutral-600" />
-            <span className="text-neutral-700 uppercase">{addressStr}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-red-600" />
-            <span className="text-red-600">Expires {expiryText}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row justify-end space-x-6">
-        {isOwner && (
-          <Link to={`/donation/${_id}`}>
-          <Button
-            size="sm"
-            variant="outline"
-            className="bg-white text-black border-2  border-gray-400 hover:bg-gray-400 hover:text-white rounded-md w-full"
-            >
-            {<Pencil className="h-4 w-4" />}
-            <p className="text-xs" >EDIT</p>
-          </Button>
-        </Link>
+        {/* Description */}
+        {description && (
+          <p className="text-neutral-700 mb-6 leading-relaxed">{description}</p>
         )}
-        <Button className="bg-white px-2 text-black border-2  border-gray-400 hover:bg-gray-400 hover:text-white rounded-md " size="md" variant="secondary" onClick={() => navigate(-1)}>
-          {<ArrowBigLeft className="h-4 w-4" />}
-          <p className="text-xs">Back</p>
-        </Button>
-      </div>
+
+        {/* Info Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Tag className="h-5 w-5 text-neutral-600" />
+              {getFoodBadge()}
+            </div>
+            <div className="flex items-center gap-2">
+              <BaggageClaim className="h-5 w-5 text-neutral-600" />
+              <span className="text-neutral-800 font-semibold">
+                {amount} {unit}
+              </span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-neutral-600" />
+              <span className="text-neutral-700 uppercase">{addressStr}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-red-600" />
+              <span className="text-red-600">Expires {expiryText}</span>
+            </div>
+          </div>
         </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row justify-end space-x-6">
+          {isOwner && (
+            <Link to={`/donation/${_id}`}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="bg-white text-black border-2  border-gray-400 hover:bg-gray-400 hover:text-white rounded-md w-full"
+              >
+                {<Pencil className="h-4 w-4" />}
+                <p className="text-xs">EDIT</p>
+              </Button>
+            </Link>
+          )}
+          {isRecipient && (
+            <Link>
+              <Button
+                onClick={applingRequest}
+                size="sm"
+                variant="outline"
+                className="bg-white text-black border-2  border-gray-400 hover:bg-gray-400 hover:text-white rounded-md w-full"
+              >
+                {<Pencil className="h-4 w-4" />}
+                <p className="text-xs">Apply request</p>
+              </Button>
+            </Link>
+          )}
+          <Button
+            className="bg-white px-2 text-black border-2  border-gray-400 hover:bg-gray-400 hover:text-white rounded-md "
+            size="md"
+            variant="secondary"
+            onClick={() => navigate(-1)}
+          >
+            {<ArrowBigLeft className="h-4 w-4" />}
+            <p className="text-xs">Back</p>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

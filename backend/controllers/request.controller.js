@@ -39,11 +39,49 @@ export const getRequests = async (req, res) => {
         console.error('Error retrieving requests:', error);
     }
 };
+export const applyRequest = async (req,res)=>{
+    try{
+        const {donationId} = req.params;
+        const userId = req.id;
+        console.log("User : ", userId);
+        const donation = await Donation.findById(donationId).populate('donor');
+        if(!donation){
+            return res.status(404).json({message: 'Donation not found', success: false});
+        }
+        console.log("Donation : ", donation);
+        const request = new Request({ donation: donation._id, donor: donation.donor, status: 'PENDING',active: true,recipient:userId });
+        if(!request){   
+            return res.status(404).json({message: 'Request not found', success: false});
+        }
+        console.log("Request : ", request);
+        const user = await User.findById(userId);
+        if(!user){
+            return res.status(404).json({message: 'User not found', success: false});
+        }
+        if(user.role !== 'RECIPIENT'){
+            return res.status(400).json({message: 'You are not authorized to apply for this request', success: false});
+        }
+        if(request.recipient === (user._id)){
+            return res.status(400).json({message: 'You have already applied for this request', success: false});
+        }
+        // request.recipient.push(user._id);
+        user.request.push(request._id);
+        await user.save();
+        await request.save();
+        return res.status(200).json({message: 'Request applied successfully', success: true, request: request});
+
+    }
+    catch(error){
+        console.error('Error applying for request:', error);
+        res.status(500).json({message: 'Error applying for request', success: false});
+    }
+}
 
 export const getRequestsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const requests = await Request.find({ user: userId }).sort({ createdAt: -1 }).populate({
+        console.log("User : ", userId);
+        const requests = await Request.find({ recipient: userId }).sort({ createdAt: -1 }).populate({
             path: 'donation',
             populate: {
                 path: 'donor'

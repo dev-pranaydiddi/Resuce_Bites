@@ -27,9 +27,9 @@ const RequestSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['PENDING', 'ACCEPTED' ,'FULFILLED'],
+        enum: ['PENDING','AVAILABLE', 'ACCEPTED','FULLFILLED'],
         required: true,
-        default: 'PENDING'
+        default: 'AVAILABLE'
     },
     donor: {
         type: Schema.Types.ObjectId,

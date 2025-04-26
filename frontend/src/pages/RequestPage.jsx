@@ -4,7 +4,7 @@ import { AuthContext } from "../App"; // adjust path
 import {
   getDonation,
   getAllDonations,
-  createRequest,
+  applyRequest,
 } from "../lib/donation-api"; // adjust path
 
 export default function RequestPage() {
@@ -56,7 +56,7 @@ export default function RequestPage() {
 
     setSubmitting(true);
     try {
-      await createRequest({
+      await applyRequest({
         donationId,
         organizationId: organization.id,
         pickupDetails,
