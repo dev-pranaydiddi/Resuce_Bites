@@ -507,7 +507,7 @@ export default function DonatePage() {
 }
           </TabsContent>
           <TabsContent value="browse">
-            <DonationsList limit={null} showViewAll filter="AVAILABLE" />
+            <DonationsList limit={5} showViewAll filter="AVAILABLE" />
           </TabsContent>
         </Tabs>
       </div>

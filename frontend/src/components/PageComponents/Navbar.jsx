@@ -16,7 +16,7 @@ const Navbar = () => {
 
   const links = [
     { to: "/", label: "Home" },
-    { to: "/donate", label: "Donate" },
+    { to: "/donation", label: "Donate" },
     { to: "/request", label: "Request Food" },
     { to: "/how-it-works", label: "How It Works" },
     { to: "/about", label: "About Us" },

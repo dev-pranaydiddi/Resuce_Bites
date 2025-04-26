@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -170,11 +171,12 @@ export default function Register() {
     setIsLoading(true);
     try {
       const res = await registerUser(userData);
+      console.log(res);
       if (res.success) {
         login(res.user, res.organization);
         navigate("/dashboard");
       } else {
-        setErrors(res.errors || {});
+        toast.error(res?.response?.data?.message);
       }
     } catch (err) {
       console.error(err);

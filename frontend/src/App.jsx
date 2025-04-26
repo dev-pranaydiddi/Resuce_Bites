@@ -25,6 +25,8 @@ import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/not-found";
+import EditDonation from "./components/PageComponents/donations/EditDonation";
+import ViewDonation from "./components/PageComponents/donations/ViewDonation";
 
 // Components
 import Navbar from "./components/PageComponents/Navbar";
@@ -122,13 +124,33 @@ function Router() {
           <Route path="/about" element={<About />} />
 
           <Route
-            path="/donate"
+            path="/donation"
             element={
               <ProtectedRoute>
                 <DonatePage />
               </ProtectedRoute>
             }
           />
+          
+          
+          <Route
+            path="/donation/edit/:donationId"
+            element={
+              <ProtectedRoute>
+               <EditDonation/>
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/donation/:donationId"
+            element={
+              <ProtectedRoute>
+                <ViewDonation />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route
             path="/request"
             element={

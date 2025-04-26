@@ -86,59 +86,52 @@ const DonationCard = ({ donation, onRequest }) => {
   return (
     <div className="bg-neutral-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
       <div className="p-6 flex flex-col h-full">
-        <div className="flex justify-between items-start mb-3">
+        <div className="flex justify-between items-start mb-2">
           <h3 className="font-heading font-semibold text-xl">{name}</h3>
           {getStatusBadge()}
         </div>
 
         <div className="flex items-center gap-2 mb-2">
-          <Tag className="h-4 w-4 text-neutral-600" />
-          <span className="text-sm text-neutral-600 uppercase">{foodType}</span>
-        </div>
-
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-neutral-800 font-semibold">
+          <div className="flex gap-2 items-center">
+          <Tag className="h-3 w-3 text-neutral-600" />
+          <span className="text-xs text-neutral-600 uppercase">{foodType}</span>
+          </div>
+          <span className="text-xs ml-5 text-neutral-800 font-semibold">
             {quantity.amount} {quantity.unit}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 mb-4">
-          <MapPin className="h-4 w-4 text-neutral-600" />
-          <span className="text-sm text-neutral-600">{addressStr}</span>
+        <div className="flex items-center gap-2 mb-2">
+          <MapPin className="h-6 w-6 text-neutral-600" />
+          <span className="text-xs text-neutral-600">{addressStr.toUpperCase()}</span>
         </div>
 
-        <div className="flex items-center gap-2 mb-6">
-          <Clock className="h-4 w-4 text-neutral-600" />
-          <span className="text-sm text-neutral-600">Expires {expiryText}</span>
+        <div className="flex items-center gap-2 mb-2">
+          <Clock className="h-4 w-4 text-red-600" />
+          <span className="text-sm text-red-600">Expires {expiryText}</span>
+        </div>
+        <div className="flex justify-end mb-3">
+          <span className="text-xs text-right text-neutral-500">~ {donor.name.first} {donor.name.last} </span>
         </div>
 
-        {!user?.user?.role ? (
+        {!user?.user ? (
           <div></div>
         ) : (
           <div className="mt-auto">
-            {status === "AVAILABLE" &&
-            user?.user?.role === "RECIPIENT" &&
-            user &&
-            user?.user?._id != donor?._id ? (
-              <Link>
+                 
+                 {user.user.role === "DONOR" && user.user._id == donor._id ? 
+                 <Link to={`/donation/edit/${_id}`}>
                 <Button
                   size="sm"
                   className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
-                >
-                  Request
-                </Button>
-              </Link>
-            ) : status === "AVAILABLE" &&
-              user?.user?.role === "DONATION" &&
-              user?.user?._id == donor?._id ? (
-              <Button
-                size="sm"
-                className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
-                onClick={() => onRequest(donation)}
-              >
-                Edit Donation
-              </Button>
-            ) : null}
+                > EDIT DONATION</Button>
+              </Link> : <Link to={`/donation/${_id}`} >
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
+                >VIEW</Button>
+              </Link>}
+                
           </div>
         )}
       </div>

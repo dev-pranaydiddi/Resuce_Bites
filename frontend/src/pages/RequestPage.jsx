@@ -73,7 +73,7 @@ export default function RequestPage() {
   };
 
   // 1) Donor cannot request
-  if (user && user.userType !== "organization") {
+  if (user && user?.user !== "organization") {
     return (
       <div className="container mx-auto p-8">
         <div className="bg-white rounded shadow p-6 max-w-lg mx-auto">

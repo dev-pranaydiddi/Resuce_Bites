@@ -13,7 +13,7 @@ export const registerUser = async (req, res) => {
     // console.log("Registering user:", req.body);
     const { email, password, role, name, phone, address, bio } = req.body.userData;
     console.log("Registering user:", req.body.userData);
-    console.log("email:", email, "password:", password, "name:", name, "role:", role, "phone:", phone, "address:", address, "bio:", bio, "address:", address, "address.orgName:", address.orgName, "address.street:", address.street, "address.city:", address.city, "address.state:", address.state, "address.zip:", address.zip, "address.country:", address.country);
+    // console.log("email:", email, "password:", password, "name:", name, "role:", role, "phone:", phone, "address:", address, "bio:", bio, "address:", address, "address.orgName:", address.orgName, "address.street:", address.street, "address.city:", address.city, "address.state:", address.state, "address.zip:", address.zip, "address.country:", address.country);
 
     if (!email || !password || !name?.first || !name?.last || !role  || !address.street || !address.city || !address.state || !address.zip || !address.country) {
       return res.status(400).json({ message: 'Missing required fields', success: false });
