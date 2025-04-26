@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Clock, Tag } from "lucide-react";
+import { MapPin, Clock, Tag, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
@@ -93,8 +93,10 @@ const DonationCard = ({ donation, onRequest }) => {
 
         <div className="flex items-center gap-2 mb-2">
           <div className="flex gap-2 items-center">
-          <Tag className="h-3 w-3 text-neutral-600" />
-          <span className="text-xs text-neutral-600 uppercase">{foodType}</span>
+            <Tag className="h-3 w-3 text-neutral-600" />
+            <span className="text-xs text-neutral-600 uppercase">
+              {foodType}
+            </span>
           </div>
           <span className="text-xs ml-5 text-neutral-800 font-semibold">
             {quantity.amount} {quantity.unit}
@@ -103,7 +105,9 @@ const DonationCard = ({ donation, onRequest }) => {
 
         <div className="flex items-center gap-2 mb-2">
           <MapPin className="h-6 w-6 text-neutral-600" />
-          <span className="text-xs text-neutral-600">{addressStr.toUpperCase()}</span>
+          <span className="text-xs text-neutral-600">
+            {addressStr.toUpperCase()}
+          </span>
         </div>
 
         <div className="flex items-center gap-2 mb-2">
@@ -111,29 +115,20 @@ const DonationCard = ({ donation, onRequest }) => {
           <span className="text-sm text-red-600">Expires {expiryText}</span>
         </div>
         <div className="flex justify-end mb-3">
-          <span className="text-xs text-right text-neutral-500">~ {donor.name.first} {donor.name.last} </span>
+          <span className="text-xs text-right text-neutral-500">
+            ~ {donor.name.first} {donor.name.last}{" "}
+          </span>
         </div>
-
-        {!user?.user ? (
-          <div></div>
-        ) : (
-          <div className="mt-auto">
-                 
-                 {user.user.role === "DONOR" && user.user._id == donor._id ? 
-                 <Link to={`/donation/edit/${_id}`}>
-                <Button
-                  size="sm"
-                  className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
-                > EDIT DONATION</Button>
-              </Link> : <Link to={`/donation/${_id}`} >
-                <Button
-                  size="sm"
-                  className="bg-primary hover:bg-primary-dark text-white rounded-full w-full"
-                >VIEW</Button>
-              </Link>}
-                
-          </div>
-        )}
+        <Link to={`/donation/${_id}`}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="bg-black text-white border-2 border-black hover:bg-white hover:text-black rounded-md w-full"
+          >
+            {<Eye className="h-4 w-4 mr-1" />}
+            <p className="text-xs" >VIEW</p>
+          </Button>
+        </Link>
       </div>
     </div>
   );
