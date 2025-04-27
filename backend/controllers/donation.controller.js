@@ -26,23 +26,12 @@ export const createDonation = async (req, res) => {
                 return res.status(400).json({ message: "Donation already exists", success: false });
             }
         });
-
-        // console.log("Existing Donation:", existingDonation);
-        // console.log("name:", name);
-        // Get the donor's ID from the authenticated request (make sure your authentication middleware sets req.id)
-
-
         // Create a new Donation document using your Donation model
         const donation = new Donation({ name, foodType, quantity, pickUpAddress, expiryTime, description, donor });
         console.log("Donation:", donation);
         if (donation && user.role === 'DONOR') {
-            // create a new request using the request model
-            const request = new Request({ donation: donation._id, donor: user._id, status: 'PENDING',active: true });
-            donation.request= request._id;
             user.donation.push(donation._id);
             console.log("saved");
-            await request.save();
-            console.log("Request:", request );
             await donation.save();
             await user.save();
         }
@@ -75,7 +64,12 @@ export const getDonationsByUser = async (req, res) => {
 
 export const getDonations = async (req, res) => {
     try {
-        const donations = await Donation.find().sort({ createdAt: -1 }).populate('recipient').populate('request').populate('delivery').populate('donor');
+        const donations = await Donation.find().sort({ createdAt: -1 }).populate('recipient').populate({path:'requests',
+            options:{sort:{createdAt:-1}},
+            populate:{
+                path:'applicant'
+            }
+        }).populate('delivery').populate('donor');
         if (!donations || donations.length === 0) {
             return res.status(404).json({ message: 'No donations found at this time.', success: false });
         }
@@ -107,7 +101,12 @@ export const getDonation = async (req, res) => {
     try {
         const { donationId } = req.params;
         console.log("Donation ID:", donationId);
-        const donation = await Donation.findById(donationId).populate('recipient').populate('request').populate('delivery').populate('donor');
+        const donation = await Donation.findById(donationId).sort({ createdAt: -1 }).populate('recipient').populate({path:'requests',
+            options:{sort:{createdAt:-1}},
+            populate:{
+                path:'applicant'
+            }
+        }).populate('delivery').populate('donor');
         if (!donation) {
             return res.status(404).json({ message: 'Donation not found.', success: false });
         }
