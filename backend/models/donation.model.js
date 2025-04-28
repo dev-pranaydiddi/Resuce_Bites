@@ -60,7 +60,7 @@ const DonationSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['AVAILABLE', 'RESERVED', 'DELIVERED', 'EXPIRED', 'CANCELLED'],
+        enum: ['AVAILABLE', 'RESERVED','IN_TRANSIT', 'DELIVERED', 'EXPIRED', 'CANCELLED'],
         required: true,
         default: 'AVAILABLE'
     },
@@ -69,6 +69,11 @@ const DonationSchema = new Schema({
         ref: 'User',
         required: true
     },
+    requests:{
+        type: [Schema.Types.ObjectId],
+        ref: 'Request',
+        default: []
+    },
     recipient: {
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -76,10 +81,6 @@ const DonationSchema = new Schema({
     delivery: {
         type: Schema.Types.ObjectId,
         ref: 'Delivery'
-    },
-    request: {
-        type: Schema.Types.ObjectId,
-        ref: 'Request'
     },
     volunteer: {
         type: Schema.Types.ObjectId,

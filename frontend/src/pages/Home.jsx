@@ -1,15 +1,23 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import Hero from "@/components/PageComponents/Hero";
-import ImpactStats from "@/components/PageComponents/ImpactStats";
-import HowItWorksSection from "@/components/PageComponents/HowItWorksSection";
-import DonationsList from "@/components/PageComponents/DonationsList";
-import OrganizationsList from "@/components/PageComponents/OrganizationsList";
-import TestimonialsList from "@/components/PageComponents/TestimonialsList";
-import CallToAction from "@/components/PageComponents/CallToAction";
-import { Helmet } from "react-helmet";
+import React, { use } from 'react';
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+
+import Hero from '@/components/PageComponents/Hero';
+import HowItWorksSection from '@/components/PageComponents/HowItWorksSection';
+import DonationsList from '@/components/PageComponents/DonationsList';
+import OrganizationsList from '@/components/PageComponents/OrganizationsList';
+import TestimonialsList from '@/components/PageComponents/TestimonialsList';
+import CallToAction from '@/components/PageComponents/CallToAction';
+
+import useGetAllDonations from '@/hooks/useGetAllDonations';
+import { store } from '@/store/store';
 
 const Home = () => {
+  useGetAllDonations();
+  const { loading } = useSelector(store=>store.auth)
+  const allDonations = useSelector((s) => s.donation.allDonations);
+
   return (
     <>
       <Helmet>
@@ -19,11 +27,11 @@ const Home = () => {
           content="Connect with local organizations to donate surplus food or find resources for those in need."
         />
       </Helmet>
-
+        <div>
+        <script src="https://static.elfsight.com/platform/platform.js" async></script>
+        <div class="elfsight-app-59c95c12-59a0-4e70-836e-a8b6ad2a1172" data-elfsight-app-lazy></div>
+        </div>
       <Hero />
-
-      {/* <ImpactStats /> */}
-
       <HowItWorksSection />
 
       <section className="py-16 bg-white">
@@ -52,7 +60,14 @@ const Home = () => {
               </svg>
             </Link>
           </div>
-          <DonationsList limit={3} showViewAll={true} filter="AVAILABLE" />
+
+          {/* Pass loading down if you want skeletons */}
+          <DonationsList
+            limit={3}
+            showViewAll={true}
+            filter="AVAILABLE"
+            loading={loading}
+          />
         </div>
       </section>
 
@@ -63,7 +78,8 @@ const Home = () => {
               Our Partner Organizations
             </h2>
             <p className="text-neutral-600 max-w-2xl mx-auto">
-              We work with these amazing organizations to distribute food where it's needed most.
+              We work with these amazing organizations to distribute food where
+              it's needed most.
             </p>
           </div>
 

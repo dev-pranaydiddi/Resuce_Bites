@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAllDonations } from '@/lib/donation-api';
+import { getAllDonations } from '@/lib/apiRequests';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';

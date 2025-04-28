@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "@/store/authSlice";
 import { Heart, Loader2 } from "lucide-react";
-import { loginUser } from "@/lib/donation-api";
+import { loginUser } from "@/lib/apiRequests";
 import { AuthContext } from "@/App";
 
 const Login = () => {

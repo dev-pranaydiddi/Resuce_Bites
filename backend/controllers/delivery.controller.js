@@ -34,17 +34,83 @@ export const getDeliveriesByUser = async (req, res) => {
 
 export const getDeliveries = async (req, res) => {
     try {
-        const deliveries = await Delivery.find().sort({ createdAt: -1 }).populate('recipient').populate('request');
-        if (!deliveries || deliveries.length === 0) {
-            return res.status(404).json({ message: 'No deliveries found at this time.', success: false });
+      const userId = req.id;
+      const user = await User.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+      if (user.role !== 'VOLUNTEER') {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Not authorized' });
+      }
+  
+      // only unassigned deliveries
+      const deliveries = await Delivery.find({ volunteer: null })
+        .sort({ createdAt: -1 })
+        .populate({
+          path: 'donation',
+          select: 'name pickUpAddress',
+          populate: { path: 'recipient' }
+        })
+        .populate({
+          path: 'request',
+          select: 'applicant deliveryAddress',
+          populate: { path: 'applicant'}
+        });
+  
+      if (!deliveries.length) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'No deliveries available' });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: 'Deliveries retrieved successfully',
+        deliveries
+      });
+    } catch (err) {
+      console.error('Error retrieving deliveries:', err);
+      return res
+        .status(500)
+        .json({ success: false, message: 'Server error' });
+    }
+  };
+
+export const acceptDelivery = async (req, res) => {
+    try {
+        const { deliveryId } = req.params;
+        console.log("Delivery ID:", deliveryId);
+        const {status} = req.body;
+        console.log(status)
+        const userId = req.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', success: false });
         }
-        res.status(200).json({ message: 'Deliveries retrieved successfully', success: true, deliveries: deliveries });
+        if(user.role !== 'VOLUNTEER'){
+            return res.status(403).json({ message: 'You are not authorized to accept this delivery', success: false });
+        
+        }
+        const delivery = await Delivery.findById(deliveryId);
+        if (!delivery) {
+            return res.status(404).json({ message: 'Delivery not found', success: false });
+        }
+        console.log('reach')
+        if(status === 'ACCEPTED'){
+            delivery.volunteer = req.id;
+            delivery.status = status;
+        }
+        await delivery.save();
+        return res.status(200).json({ message: 'Delivery accepted successfully', success: true, delivery: delivery });
+    } catch (error) {
+        console.error('Error accepting delivery:', error);
+        res.status(500).json({ message: 'Error accepting delivery', success: false });
     }
-    catch (error) {
-        console.error('Error retrieving deliveries:', error);
-        res.status(500).json({ message: 'Error retrieving deliveries', success: false });
-    }
-}
+};
 
 export const getDelivery = async (req, res) => {
     

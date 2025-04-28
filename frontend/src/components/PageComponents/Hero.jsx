@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { AuthContext } from '@/App';
 
 const Hero = () => {
+  const {user} = useContext(AuthContext);
   return (
     <section className="bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--primary))] py-16 md:py-24 relative overflow-hidden">
       {/* Background image with overlay */}
@@ -24,7 +26,38 @@ const Hero = () => {
             Connect with local organizations to donate surplus food or find resources for those in need. Together, we can build a community where no one goes hungry.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/donate">
+            {user?.user?.role === 'DONOR' &&
+            <Link to="/donation">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="bg-white hover:bg-neutral-100 text-[hsl(var(--primary-dark))] rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
+              >
+                Donate Food
+              </Button>
+            </Link>}
+            {user?.user?.role === 'RECIPIENT' &&
+            <Link to="/donation">
+              <Button
+                size="lg"
+                className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary-dark))] text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
+              >
+                Request Food
+              </Button>
+            </Link>}
+            {user?.user?.role === 'VOLUNTEER' &&
+            <Link to="/deliveries">
+              <Button
+                size="lg"
+                className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary-dark))] text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
+              >
+                Check Deliveries
+              </Button>
+            </Link>}
+            {user == null &&
+            (
+            <div>
+              <Link to="/donation">
               <Button
                 size="lg"
                 variant="secondary"
@@ -33,7 +66,7 @@ const Hero = () => {
                 Donate Food
               </Button>
             </Link>
-            <Link to="/request">
+            <Link to="/donation">
               <Button
                 size="lg"
                 className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary-dark))] text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
@@ -41,6 +74,7 @@ const Hero = () => {
                 Request Food
               </Button>
             </Link>
+            </div>)}
           </div>
         </div>
       </div>

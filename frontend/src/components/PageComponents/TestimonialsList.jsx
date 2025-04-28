@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAllTestimonials } from '@/lib/donation-api';
+import { getAllTestimonials } from '@/lib/apiRequests';
 import TestimonialCard from './TestimonialCard';
 import { Skeleton } from '@/components/ui/skeleton';
 

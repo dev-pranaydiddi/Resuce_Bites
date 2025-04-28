@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../App";
-import { registerUser } from "../lib/donation-api";
+import { registerUser } from "../lib/apiRequests";
 import { Heart } from "lucide-react";
 
 import { Input } from "@/components/ui/input";

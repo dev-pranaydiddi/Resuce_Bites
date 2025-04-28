@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/App";
 import { useToast } from "@/hooks/use-toast";
-import { createDonation } from "@/lib/donation-api";
+import { createDonation } from "@/lib/apiRequests";
 import { Helmet } from "react-helmet";
 
 import DonationsList from "@/components/PageComponents/DonationsList";
@@ -507,7 +507,7 @@ export default function DonatePage() {
 }
           </TabsContent>
           <TabsContent value="browse">
-            <DonationsList limit={5} showViewAll filter="AVAILABLE" />
+            <DonationsList  showViewAll filter="AVAILABLE" />
           </TabsContent>
         </Tabs>
       </div>

@@ -32,8 +32,11 @@ import ViewDonation from "./components/PageComponents/donations/ViewDonation";
 import Navbar from "./components/PageComponents/Navbar";
 import Footer from "./components/PageComponents/Footer";
 import ProtectedRoute from "./components/PageComponents/ProtectedRoute";
-import { checkUserSession, logoutUser } from "./lib/donation-api";
-import AppliedRequests from "./components/PageComponents/requests/appliedRequests";
+import { checkUserSession, logoutUser } from "./lib/apiRequests";
+import AppliedRequests from "./components/PageComponents/requests/AppliedRequests";
+import MyRequests from "./components/PageComponents/requests/myRequests";
+import AllDeliveries from "./components/PageComponents/deliveries/AllDeliveries";
+import MyDeliveries from "./components/PageComponents/deliveries/MyDeliveries";
 
 // Auth context
 export const AuthContext = createContext({
@@ -132,8 +135,16 @@ function Router() {
               </ProtectedRoute>
             }
           />
-          
-          
+
+          <Route
+            path="/donation/edit/:donationId"
+            element={
+              <ProtectedRoute>
+               <EditDonation/>
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/donation/edit/:donationId"
             element={
@@ -153,10 +164,10 @@ function Router() {
           />
           
           <Route
-            path="/request/:requestId"
+            path="/request"
             element={
               <ProtectedRoute>
-                <AppliedRequests />
+                <MyRequests />
               </ProtectedRoute>
             }
           />
@@ -165,6 +176,22 @@ function Router() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/deliveries"
+            element={
+              <ProtectedRoute>
+                <AllDeliveries />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-deliveries"
+            element={
+              <ProtectedRoute>
+                <MyDeliveries />
               </ProtectedRoute>
             }
           />

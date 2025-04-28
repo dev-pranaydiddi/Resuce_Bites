@@ -1,26 +1,58 @@
 // src/components/PageComponents/Navbar.jsx
 import React, { useState, useContext } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "@/App";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
+import { persistor } from "@/store/store";
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout } = useContext(AuthContext);
   const isAuthenticated = Boolean(user);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  const links = [
-    { to: "/", label: "Home" },
-    { to: "/donation", label: "Donate" },
-    { to: "/request", label: "Request Food" },
-    { to: "/how-it-works", label: "How It Works" },
-    { to: "/about", label: "About Us" },
-  ];
+  // wrap logout to also clear storage and redirect
+  const handleLogout = async () => {
+    await logout();         // your context/logout logic
+    // if you’re persisting redux you can also do:
+     await persistor.purge();
+    closeMobileMenu();
+    navigate("/login", { replace: true });
+  };
+
+  const links = !isAuthenticated
+    ? [
+        { to: "/", label: "Home" },
+        { to: "/how-it-works", label: "How It Works" },
+        { to: "/about", label: "About Us" },
+      ]
+    : user.user.role === "RECIPIENT"
+    ? [
+        { to: "/", label: "Home" },
+        { to: "/donation", label: "Browse Donations" },
+        { to: "/request", label: "My Requests" },
+        { to: "/how-it-works", label: "How It Works" },
+        { to: "/about", label: "About Us" },
+      ]
+    : user.user.role === "VOLUNTEER"
+    ? [
+        { to: "/", label: "Home" },
+        { to: "/deliveries", label: "Deliveries" },
+        { to: "/my-deliveries", label: "My Deliveries" },
+        { to: "/how-it-works", label: "How It Works" },
+        { to: "/about", label: "About Us" },
+      ]
+    : [
+        { to: "/", label: "Home" },
+        { to: "/donation", label: "Donations" },
+        { to: "/how-it-works", label: "How It Works" },
+        { to: "/about", label: "About Us" },
+      ];
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -32,12 +64,15 @@ const Navbar = () => {
           </div>
         </Link>
 
+        {/* desktop links */}
         <div className="hidden md:flex items-center space-x-8">
           {links.map(({ to, label }) => (
             <Link
               key={to}
               to={to}
-              className="font-heading font-medium text-black"
+              className={`font-heading font-medium transition-colors ${
+                pathname === to ? "text-primary" : "text-black"
+              }`}
             >
               {label}
             </Link>
@@ -50,7 +85,11 @@ const Navbar = () => {
                   Dashboard
                 </Button>
               </Link>
-              <Button onClick={logout} variant="ghost" className="rounded-full">
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="rounded-full"
+              >
                 Logout
               </Button>
             </div>
@@ -61,6 +100,7 @@ const Navbar = () => {
           )}
         </div>
 
+        {/* mobile menu button */}
         <button
           className="md:hidden bg-red-900 text-white p-2 rounded"
           onClick={toggleMobileMenu}
@@ -70,6 +110,7 @@ const Navbar = () => {
         </button>
       </nav>
 
+      {/* mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t">
           <div className="px-4 py-3 flex flex-col space-y-3">
@@ -78,7 +119,7 @@ const Navbar = () => {
                 key={to}
                 to={to}
                 onClick={closeMobileMenu}
-                className={`font-heading font-medium py-2 transition-colors hover:text-primary ${
+                className={`font-heading font-medium py-2 transition-colors ${
                   pathname === to ? "text-primary" : "text-neutral-800"
                 }`}
               >
@@ -94,10 +135,7 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Button
-                  onClick={() => {
-                    logout();
-                    closeMobileMenu();
-                  }}
+                  onClick={handleLogout}
                   variant="ghost"
                   className="w-full rounded-full"
                 >

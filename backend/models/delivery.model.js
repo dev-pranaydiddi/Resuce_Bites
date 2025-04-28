@@ -5,7 +5,7 @@ const DeliverySchema = new Schema(
   {
     status: {
       type: String,
-      enum: ["STAND_BY","ACCEPTED", "PICKED_UP", "DELIVERED", "CANCELLED"],
+      enum: ["PENDING","ACCEPTED", "PICKED_UP", "DELIVERED", "CANCELLED","EXPIRED"],
       required: true,
       default: "ACCEPTED",
     },
@@ -23,26 +23,9 @@ const DeliverySchema = new Schema(
     volunteer: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-    },
-    pickupLocation: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        required: true,
-      },
-      coordinates: {
-        type: [Number],
-        required: true,
-        index: "2dsphere",
-      },
-    },
-    pickupLocationName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    
+      // required: true,
+    }
+    ,
     pickedUpAt: Date,
     deliveredAt: Date,
     notes: String,

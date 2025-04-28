@@ -27,9 +27,9 @@ const RequestSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['PENDING','AVAILABLE', 'ACCEPTED','FULLFILLED'],
+        enum: ['PENDING','REJECTED', 'ACCEPTED','FULLFILLED'],
         required: true,
-        default: 'AVAILABLE'
+        default: 'PENDING'
     },
     donor: {
         type: Schema.Types.ObjectId,
@@ -46,7 +46,7 @@ const RequestSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Delivery'
     },
-    recipient: {
+    applicant: {
         type: Schema.Types.ObjectId,
         ref: 'User'
     }

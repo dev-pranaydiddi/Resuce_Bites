@@ -1,8 +1,8 @@
-// src/redux/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import { PURGE } from "redux-persist";
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem("user")) || null,
+  user: null,
   loading: false,
 };
 
@@ -15,12 +15,14 @@ const authSlice = createSlice({
     },
     setUser(state, action) {
       state.user = action.payload;
-      localStorage.setItem("user", JSON.stringify(action.payload));
     },
     logout(state) {
       state.user = null;
-      localStorage.removeItem("user");
+      state.loading = false;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(PURGE, () => initialState);
   },
 });
 

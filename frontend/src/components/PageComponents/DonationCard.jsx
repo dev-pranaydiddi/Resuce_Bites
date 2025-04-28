@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const DonationCard = ({ donation, onRequest }) => {
   const navigate = useNavigate();
+  // console.log("donation", donation);
   const user = useSelector((state) => state.auth.user);
   // console.log("donation", user.user.role);
   const checkAuth = () => {
@@ -42,7 +43,7 @@ const DonationCard = ({ donation, onRequest }) => {
     : "No expiry";
   const userId = user?.user?._id;
   const donorId = donor?._id;
-  console.log(userId, donorId);
+  // console.log(userId, donorId);
 
   const getStatusBadge = () => {
     if (status === "AVAILABLE")

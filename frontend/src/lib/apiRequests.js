@@ -1,5 +1,5 @@
 // src/lib/donation-api.js
-import { DONATION, USER,REQUEST } from "@/Endpoints";
+import { DONATION, USER,REQUEST, DELIVERY } from "@/Endpoints";
 import { apiRequest } from "./apiClient";
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export function checkUserSession() {
   return apiRequest("GET",`${USER}/session`)
     .then(res => 
       {
-      console.log("checkSession", res)
+      // console.log("checkSession", res)
       return res;
     });
 }
@@ -45,7 +45,7 @@ export function checkUserSession() {
 export function logoutUser() {
   return apiRequest("GET", `${USER}/logout`)
     .then(res => {
-      console.log("logoutUser", res)
+      // console.log("logoutUser", res)
       return res;
     });
   }
@@ -55,7 +55,7 @@ export function logoutUser() {
 export function getAllDonations() {
   try{
   const res = apiRequest("GET", `${DONATION}/all`);
-  console.log("getAllDonations", res)
+  // console.log("getAllDonations", res)
   return res;
 }
 catch (err) {
@@ -69,8 +69,7 @@ catch (err) {
 export function getDonation(id) {
   try{
     const res = apiRequest("GET", `${DONATION}/${id}`);
-
-    console.log("Edit Donation", res)
+    // console.log("Edit Donation", res)
     return res;
   }
   catch (err) {
@@ -90,7 +89,7 @@ export function getDonationsByDonor(donorId) {
 export async function createDonation(donationData , donorId) {
   try { 
   const res = await apiRequest("POST", `${DONATION}/new`, donationData);
-  console.log("createDonation", donationData)
+  // console.log("createDonation", donationData)
   // const res = 1;
     return res;
 }
@@ -113,6 +112,16 @@ export function updateDonation(id, donationData) {
     return err;
   }
 }
+/** @param {string} donationId  @param {object} status*/
+export function updateDonationStatus(donationId,status){
+ try{
+   const res =  apiRequest("PUT", `${DONATION}/update/${donationId}/status`,status);
+   console.log("updateDonationStatus",status)
+  }catch(err){
+    console.log("updateDonationStatus error", err);
+    return err;
+  }
+}
 
 // ── Requests ─────────────────────────────────────────────────────────────────
 
@@ -126,18 +135,20 @@ export function applyRequest(donationId) {
     return res;
   }
   catch(err){
-    console.log()
+    console.log(err)
   }
 
     // .then(res => res.json());
 }
 
-/** @param {string} userId  */
-export function getAppliedRequests(userId) {
+
+export function getAppliedRequests() {
   try{
-  console.log("getAppliedRequests", userId);
-  console.log("getAppliedRequests", `${REQUEST}/${userId}/all`)
-  const res = apiRequest("GET", `${REQUEST}/${userId}/all`)
+  // console.log("getAppliedRequests", userId);
+  // console.log("getAppliedRequests", `${REQUEST}/all`)
+  console.log("getAppliedRequests")
+  const res = apiRequest("GET", `${REQUEST}/all`)
+  console.log("getAppliedRequests response", res)
     return res;
 }
   catch(err){
@@ -146,16 +157,32 @@ export function getAppliedRequests(userId) {
   }
 }
 
-/** @param {number} id @param {objec} requestData */
-export function updateRequest(id, requestData) {
-  return apiRequest("PUT", `/api/requests/${id}`, requestData)
-    .then(res => res.json());
+/** @param {number} requestId @param {object} requestData */
+export function updateRequest(requestId, status) {
+  try{
+    console.log("updateRequest", requestId, status);
+    const res = apiRequest("PUT", `${REQUEST}/status/${requestId}/update`, status);
+    return res
+  }
+  catch(err){
+    console.log("updateRequest error", err);
+    return err;
+  }
 }
 
-/** @param {number} donationId */
-export function getRequestsByDonation(donationId) {
-  return apiRequest("GET", `/api/requests/donation/${donationId}`)
-    .then(res => res.json());
+/** @param {string} donationId */
+export function getApplicants(donationId) {
+  try
+  {
+    const res = apiRequest("GET", `${REQUEST}/applicants/${donationId}`)
+    // console.log("getApplicants", res)
+    // console.log('donation', donationId );
+    return res;
+  }
+  catch(err){
+    console.log("getApplicants error", err);
+    return err;
+  }
 }
 
 /** @param {number} orgId */
@@ -163,6 +190,53 @@ export function getRequestsByOrganization(orgId) {
   return apiRequest("GET", `/api/requests/organization/${orgId}`)
     .then(res => res.json());
 }
+
+
+
+// Deleviries 
+
+export function getAllDeliveries(){
+  try{
+    const res = apiRequest("GET", `${DELIVERY}/all`)
+    console.log("getAllDeliveries", res)
+    return res;
+  }
+  catch(err){
+    console.log("getAllDeliveries error", err);
+    return err;
+  }
+}
+
+/** @param {object} deliveryData */
+export function createDelivery(deliveryData){
+  try{
+    const res = apiRequest("POST", `${DELIVERY}/new`, deliveryData)
+    console.log("createDelivery", res)
+    return res;
+  }
+  catch(err){
+    console.log("createDelivery error", err);
+    return err;
+  }
+}
+
+/** @param {string} deliveryId  @param {object} status */
+export function acceptDelivery(deliveryId,status){
+  try{
+    const res = apiRequest("PUT", `${DELIVERY}/${deliveryId}/accept`,status)
+    console.log("acceptDelivery", res)
+    return res;
+  }
+  catch(err){
+    console.log("acceptDelivery error", err);
+    return err;
+  }
+
+}
+
+
+
+
 
 // ── Organizations ────────────────────────────────────────────────────────────
 

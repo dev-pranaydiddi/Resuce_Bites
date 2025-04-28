@@ -1,64 +1,42 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { getAllDonations } from '@/lib/donation-api';
+import React, { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import DonationCard from './DonationCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import useGetAllDonations from '@/hooks/useGetAllDonations';
 
-const DonationsList = ({ limit, showViewAll = false, filter }) => {
-  const [donations, setDonations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+const DonationsList = ({ limit, showViewAll = false, filter}) => {
+  const allDonations = useSelector((s) => s.donation.allDonations);
   const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    let isMounted = true;
-    setIsLoading(true);
-    getAllDonations()
-      .then(data => {
-        if (isMounted){ setDonations(data.donations || []);
-  console.log("donations", data.donations);}})
-      .catch(err => {
-        console.error('Failed to fetch donations:', err);
-        if (isMounted) setError(err);
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false);
-      });
-    return () => { isMounted = false; };
-  }, []);
-
-  // filter, slice, and map into cards in one memo
-  const { cards, totalCount } = useMemo(() => {
-    const filteredData = [donations]
-      .filter(d => filter === 'AVAILABLE' || d.status === filter)
-      .filter(d => {
+  const reduxLoading = useSelector((s) => s.donation.loading);
+  console.log(reduxLoading)
+  useGetAllDonations();
+  const[loading,setLoading] = useState(reduxLoading);
+  // filter + search
+  const filtered = useMemo(() => {
+    return allDonations
+      .filter((d) => filter === 'all' || d.status === filter)
+      .filter((d) => {
         if (!searchTerm) return true;
-        const lower = searchTerm.toLowerCase();
+        const q = searchTerm.toLowerCase();
         return (
-          d.title?.toLowerCase().includes(lower) ||
-          d.description?.toLowerCase().includes(lower) ||
-          d.location?.toLowerCase().includes(lower) ||
-          (typeof d.foodType === 'string' && d.foodType.toLowerCase().includes(lower))
+          d.title?.toLowerCase().includes(q) ||
+          d.description?.toLowerCase().includes(q) ||
+          d.location?.toLowerCase().includes(q) ||
+          (d.foodType && d.foodType.toLowerCase().includes(q))
         );
       });
+  }, [allDonations, filter, searchTerm]);
 
-    const finalSet = limit ? filteredData.slice(0, limit) : filteredData;
-    console.log("finalSet", finalSet);
-    const cards = finalSet[0].map(d => (
-      // console.log("donation", d)
-      <DonationCard key={d._id} donation={d} /> // Log each donation object`
-    ));
-    return { cards, totalCount: filteredData.length };
-  }, [donations, filter, searchTerm, limit]);
+  const displayed = limit ? filtered.slice(0, null) : filtered;
 
-  // Loading
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {Array.from({ length: limit || 3 }).map((_, idx) => (
-          <div key={idx} className="bg-neutral-100 rounded-lg overflow-hidden shadow-md">
+        {Array.from({ length: limit || 3 }).map((_, i) => (
+          <div key={i} className="bg-neutral-100 rounded-lg overflow-hidden shadow-md">
             <Skeleton className="w-full h-48" />
             <div className="p-6">
               <Skeleton className="h-6 w-3/4 mb-3" />
@@ -76,9 +54,17 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
     );
   }
 
-  // Error
-  if (error) {
-    return <p className="text-center text-red-500">Failed to load donations.</p>;
+  if (displayed.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-xl font-semibold mb-2">No donations found</h3>
+        <p className="text-neutral-600">
+          {searchTerm
+            ? 'Try adjusting your search terms'
+            : 'There are currently no donations available'}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -93,23 +79,38 @@ const DonationsList = ({ limit, showViewAll = false, filter }) => {
             placeholder="Search donations..."
             className="pl-10"
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       )}
 
-      {totalCount === 0 ? (
-        <div className="text-center py-12">
-          <h3 className="text-xl font-semibold mb-2">No donations found</h3>
-          <p className="text-neutral-600">
-            {searchTerm
-              ? 'Try adjusting your search terms'
-              : 'There are currently no donations available'}
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {cards}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {displayed.map((d) => (
+          <DonationCard key={d._id} donation={d} />
+        ))}
+      </div>
+
+      {showViewAll && filtered.length > (limit || 0) && (
+        <div className="mt-8 text-center">
+          <Link
+            to="/donate"
+            className="text-[hsl(var(--primary))] font-semibold hover:text-[hsl(var(--primary-dark))] transition-colors flex items-center justify-center"
+          >
+            View All Donations
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 ml-2"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </Link>
         </div>
       )}
     </div>

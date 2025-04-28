@@ -18,8 +18,9 @@ export async function apiRequest(method, url, data = null) {
       headers: { "Content-Type": "application/json" },
     };
     if (data) config.data = data;
-    console.log(data)
+    // console.log(data)
     const response = await axios(config);
+    // console.log(response)
     return response.data;
   } catch (error) {
     // Axios errors have .response when server responded
