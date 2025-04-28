@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllDeliveries } from '@/lib/apiRequests';
 import { setAllDeliveries, setLoading as setDeliveriesLoading } from '@/store/deliverySlice';
+import { toast } from 'sonner';
 
 export default function useGetAllDeliveries() {
   const dispatch = useDispatch();
@@ -14,6 +15,11 @@ export default function useGetAllDeliveries() {
     (async () => {
       try {
         const res = await getAllDeliveries();
+        if (res.success){
+          toast.success(res.message);
+        }else{
+          toast.error(res.response.data.message);
+        }
         console.log('Fetched deliveries:', res);
         if (mounted && res.success) {
           dispatch(setAllDeliveries(res.deliveries));
