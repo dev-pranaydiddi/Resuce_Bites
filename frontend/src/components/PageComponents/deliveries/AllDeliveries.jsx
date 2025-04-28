@@ -1,25 +1,47 @@
-import React, { useState, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import useGetAllDeliveries from '@/hooks/useGetAllDeliveries';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { acceptDelivery } from '@/lib/apiRequests';
 import { toast } from 'sonner';
+import { getAllDeliveries, acceptDelivery } from '@/lib/apiRequests';
+import { setAllDeliveries, addToMyDeliveries, setLoading as setDeliveriesLoading } from '@/store/deliverySlice';
 
-export default function DeliveriesList({ limit, showViewAll = false }) {
+export default function AllDeliveries({ limit, showViewAll = false }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const { allDeliveries, loading } = useSelector(s => s.delivery);
+  const { user } = useSelector(s => s.auth);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingId, setLoadingId] = useState(null);
   const [acceptedIds, setAcceptedIds] = useState([]);
 
   // fetch deliveries into Redux
-  const { allDeliveries, loading } = useSelector(s => s.delivery);
-  useGetAllDeliveries();
+  const fetchAndStore = async () => {
+    dispatch(setDeliveriesLoading(true));
+    try {
+      const res = await getAllDeliveries();
+      if (res.success) {
+        dispatch(setAllDeliveries(res.deliveries));
+      } else {
+        toast.error(res.response.data.message || 'Failed to fetch deliveries');
+      }
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      dispatch(setDeliveriesLoading(false));
+    }
+  };
 
-  // only unassigned, plus search filter
+  useEffect(() => {
+    fetchAndStore();
+  }, []);
+
+  // filter only unassigned + search
   const filtered = useMemo(() => {
     return allDeliveries
       .filter(d => !d.volunteer)
@@ -34,20 +56,21 @@ export default function DeliveriesList({ limit, showViewAll = false }) {
   }, [allDeliveries, searchTerm]);
 
   const displayed = limit ? filtered.slice(0, limit) : filtered;
-  const statusObj = { status: 'ACCEPTED' };
 
-  const acceptTheDelivery = async (id, status) => {
+  const handleAccept = async (id) => {
     setLoadingId(id);
     try {
-      const res = await acceptDelivery(id, status);
+      const res = await acceptDelivery(id, { status: 'ACCEPTED' });
       if (res.success) {
         toast.success(res.message);
-        // mark this one as accepted locally
+        // mark accepted locally
         setAcceptedIds(prev => [...prev, id]);
-        // navigate to the accepted list
-        navigate('/accepted-deliveries');
+        // remove from Redux list
+        dispatch(addToMyDeliveries(id));
+        // navigate to my deliveries page
+        navigate('/my-deliveries');
       } else {
-        toast.error(res.response?.data?.message || 'Failed to accept');
+        toast.error(res.message || 'Failed to accept');
       }
     } catch (err) {
       toast.error(err.message);
@@ -66,7 +89,7 @@ export default function DeliveriesList({ limit, showViewAll = false }) {
     );
   }
 
-  if (displayed.length === 0) {
+  if (!displayed.length) {
     return (
       <div className="text-center py-12">
         <h3 className="text-xl font-semibold mb-2">No deliveries available</h3>
@@ -106,22 +129,19 @@ export default function DeliveriesList({ limit, showViewAll = false }) {
             <div>
               <h4 className="font-semibold text-lg">{d.donation.name}</h4>
               <p className="text-sm text-gray-600">
-                Recipient: {d.request.applicant.name.first}{' '}
-                {d.request.applicant.name.last}
+                Recipient: {d.request.applicant.name.first} {d.request.applicant.name.last}
               </p>
               <p className="mt-2 text-sm">
                 <span className="font-medium">Pickup:</span>{' '}
-                {[
-                  d.donation.pickUpAddress.street,
-                  d.donation.pickUpAddress.city,
-                  d.donation.pickUpAddress.state
-                ]
+                {[d.donation.pickUpAddress.street, d.donation.pickUpAddress.city, d.donation.pickUpAddress.state]
                   .filter(Boolean)
                   .join(', ')}
               </p>
               <p className="mt-1 text-sm">
                 <span className="font-medium">Delivery To:</span>{' '}
-                {d.request.applicant.address.orgName}
+                {[d.request.applicant.address.street, d.request.applicant.address.city, d.request.applicant.address.state]
+                  .filter(Boolean)
+                  .join(', ')}
               </p>
               <p
                 className={`mt-1 inline-block text-xs font-semibold px-2 py-1 rounded ${
@@ -141,10 +161,8 @@ export default function DeliveriesList({ limit, showViewAll = false }) {
             <Button
               size="sm"
               className="mt-4"
-              onClick={() => acceptTheDelivery(d._id, statusObj)}
-              disabled={
-                loadingId === d._id || acceptedIds.includes(d._id)
-              }
+              onClick={() => handleAccept(d._id)}
+              disabled={Boolean(d.volunteer) || loadingId === d._id}
             >
               {loadingId === d._id
                 ? 'Accepting…'

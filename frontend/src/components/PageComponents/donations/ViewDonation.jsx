@@ -25,7 +25,7 @@ import { DONATION } from "@/Endpoints";
 
 const NEXT = {
   AVAILABLE:   ['RESERVE', 'REJECT', 'CANCEL'],
-  RESERVED:    ['IN_TRANSIT'],
+  RESERVED:    [],
   IN_TRANSIT:  [],
   DELIVERED:   [],
   REJECT:    [],

@@ -5,6 +5,7 @@ const deliverySlice = createSlice({
   name: 'delivery',
   initialState: {
     allDeliveries: [],
+    myDeliveries: [],
     loading: false,
   },
   reducers: {
@@ -19,11 +20,14 @@ const deliverySlice = createSlice({
         (delivery) => delivery._id !== action.payload
       );
     },
+    setMyDeliveries: (state, action) => {
+      state.myDeliveries = action.payload;
+    },
   },
    extraReducers: (builder) => {
       builder.addCase(PURGE, () => donationInitialState);
     },
 });
 
-export const { setAllDeliveries, setLoading, addToMyDeliveries } = deliverySlice.actions;
+export const { setAllDeliveries, setLoading, addToMyDeliveries,setMyDeliveries } = deliverySlice.actions;
 export default deliverySlice.reducer;

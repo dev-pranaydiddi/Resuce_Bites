@@ -234,6 +234,20 @@ export function acceptDelivery(deliveryId,status){
 
 }
 
+/** @param {string} deliveryId  @param {object} status*/
+export function updateDeliveryStatus(deliveryId,status){
+  try{
+    const res = apiRequest("PUT", `${DELIVERY}/${deliveryId}/update`,status)
+    console.log("updateDeliveryStatus", res)
+    return res;
+  }
+  catch(err){
+    console.log("updateDeliveryStatus error", err);
+    return err;
+  }
+
+}
+
 
 
 

@@ -80,6 +80,54 @@ export const getDeliveries = async (req, res) => {
     }
   };
 
+  export const getVolunteerDeliveries = async (req, res) => {
+    try {
+      const userId = req.id;
+      const user = await User.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'User not found' });
+      }
+      if (user.role !== 'VOLUNTEER') {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Not authorized' });
+      }
+  
+      // only unassigned deliveries
+      const deliveries = await Delivery.find({ volunteer: userId })
+        .sort({ createdAt: -1 })
+        .populate({
+          path: 'donation',
+          select: 'name pickUpAddress',
+          populate: { path: 'recipient' }
+        })
+        .populate({
+          path: 'request',
+          select: 'applicant deliveryAddress',
+          populate: { path: 'applicant'}
+        });
+  
+      if (!deliveries.length) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'No deliveries available accept any' });
+      }
+  
+      return res.status(200).json({
+        success: true,
+        message: 'Deliveries retrieved successfully',
+        deliveries
+      });
+    } catch (err) {
+      console.error('Error retrieving deliveries:', err);
+      return res
+        .status(500)
+        .json({ success: false, message: 'Server error' });
+    }
+  };
+
 export const acceptDelivery = async (req, res) => {
     try {
         const { deliveryId } = req.params;
@@ -131,104 +179,101 @@ export const getDelivery = async (req, res) => {
 
 import mongoose from 'mongoose';
 import asyncHandler from 'express-async-handler';
+import { Request } from '../models/request.model.js';
+import { Donation } from '../models/donation.model.js';
 
 
-export const updateDelivery = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const {
-    pickupAddress,
-    pickupLocationName,
-    pickupTime,
-    expiryTime,
-    status,
-    description
-  } = req.body;
-  const userId = req.id;       // From auth middleware
-  const userRole = req.role;   // From auth middleware
+const ALLOWED_TRANSITIONS = {
+  ACCEPTED:   ["PICKED_UP","CANCELLED"],
+  PICKED_UP:  ["DELIVERED"],
+  DELIVERED:  [],       // terminal
+  CANCELLED:  [],       // terminal
+  EXPIRED:    []        // if you support auto-expiry
+};
 
-  // 1) Validate required fields
-  if (!id || !pickupAddress || !pickupLocationName || !pickupTime || !expiryTime || !status || !description) {
-    return res.status(400).json({ success: false, message: 'Please provide all required fields' });
+
+export const updateDeliveryStatus = asyncHandler(async (req, res) => {
+  const { deliveryId } = req.params;
+  const { status: tgt } = req.body;
+
+  if (!deliveryId || !tgt) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing deliveryId or status" });
   }
 
-  // 2) Validate status
-  const allowed = ['ASSIGNED', 'PICKED_UP', 'DELIVERED', 'CANCELLED'];
-  if (!allowed.includes(status)) {
-    return res.status(400).json({ success: false, message: 'Invalid status value' });
+  const newStatus = tgt.toUpperCase();
+  if (!ALLOWED_TRANSITIONS[newStatus] && newStatus !== "ASSIGNED") {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid status value" });
   }
 
-  // 3) Start transaction
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    // 4) Load delivery
-    const delivery = await Delivery.findById(id).session(session);
-    if (!delivery) {
-      throw new Error('Delivery not found');
-    }
-
-    // 5) Authorization: only donor (creator) or assigned volunteer can update
-    if (userRole === 'VOLUNTEER' && delivery.volunteer.toString() !== userId) {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-    if (userRole === 'DONOR' && delivery.donor.toString() !== userId) {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
-
-    // 6) Load related docs
-    const currRequest = await Request.findById(delivery.request).session(session);
-    if (!currRequest) {
-      throw new Error('Associated request not found');
-    }
-    const donation = await Donation.findById(currRequest.donation).session(session);
-    if (!donation) {
-      throw new Error('Associated donation not found');
-    }
-
-    // 7) Update delivery fields
-    delivery.pickupAddress = pickupAddress;
-    delivery.pickupLocationName = pickupLocationName;
-    delivery.pickupTime = pickupTime;
-    delivery.expiryTime = expiryTime;
-    delivery.status = status;
-    delivery.description = description;
-    await delivery.save({ session });
-
-    // 8) Cascade updates based on status
-    if (status === 'DELIVERED') {
-      // mark donation delivered, request fulfilled
-      donation.status = 'DELIVERED';
-      currRequest.status = 'FULFILLED';
-      await donation.save({ session });
-      await currRequest.save({ session });
-    } else if (status === 'CANCELLED') {
-      // if cancelled, revert donation to AVAILABLE
-      donation.status = 'AVAILABLE';
-      await donation.save({ session });
-    }
-
-    // 9) Commit
-    await session.commitTransaction();
-    session.endSession();
-
-    // 10) Return updated delivery
-    const updated = await Delivery.findById(id)
-      .populate('donor', 'name email')
-      .populate('volunteer', 'name email')
-      .populate('request')
-      .lean();
-
-    return res.status(200).json({ success: true, message: 'Delivery updated successfully', delivery: updated });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error('Error in updateDelivery:', error);
-    const code = error.message === 'Delivery not found' ? 404 : 500;
-    return res.status(code).json({ success: false, message: error.message });
+  // 1) Load delivery
+  const delivery = await Delivery.findById(deliveryId);
+  if (!delivery) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Delivery not found" });
   }
+
+  // 2) Validate transition
+  const current = delivery.status.toUpperCase();
+  if (current === newStatus) {
+    return res
+      .status(400)
+      .json({ success: false, message: `Already in "${current}"` });
+  }
+  const allowed = ALLOWED_TRANSITIONS[current] || [];
+  if (!allowed.includes(newStatus)) {
+    return res.status(400).json({
+      success: false,
+      message: `Cannot transition from "${current}" to "${newStatus}".`
+    });
+  }
+
+  // 3) Update delivery status
+  delivery.status = newStatus;
+  await delivery.save();
+
+  // 4) Cascade updates
+  const request = await Request.findById(delivery.request);
+  const donation = await Donation.findById(request.donation);
+
+  switch (newStatus) {
+    case "PICKED_UP":
+      donation.status = "IN_TRANSIT";
+      break;
+    case "DELIVERED":
+      donation.status = "DELIVERED";
+      request.status  = "FULFILLED";
+      break;
+    case "CANCELLED":
+      donation.status = "AVAILABLE";
+      break;
+    // EXPIRED or ASSIGNED have no cascade
+  }
+
+  // save both if modified
+  const saves = [donation.save()];
+  if (newStatus === "DELIVERED") saves.push(request.save());
+  await Promise.all(saves);
+
+  // 5) Return updated
+  const updated = await Delivery.findById(deliveryId)
+    .populate("donation")
+    .populate("volunteer")
+    .populate({
+      path: "request",
+      populate: { path: "applicant" }
+    });
+
+  res.status(200).json({
+    success: true,
+    message: `Delivery status updated to ${newStatus}`,
+    delivery: updated
+  });
 });
-
 
 export const deleteDelivery = async (req, res) => {
     try {

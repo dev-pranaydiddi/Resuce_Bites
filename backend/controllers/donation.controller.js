@@ -143,133 +143,111 @@ export const getDonation = async (req, res) => {
     }
 };
 
-
-
 export const updateDonationStatus = async (req, res) => {
     try {
-        const NEXT = {
-            AVAILABLE: ['RESERVED','REJECTED', 'CANCELLED'],
-            RESERVED: ['IN_TRANSIT'],
-            IN_TRANSIT: [],            // cannot manually go to DELIVERED
-            DELIVERED: [],            // terminal
-            REJECTED: [],            // terminal
-            CANCELLED: [],            // terminal
-            EXPIRED: [],            // terminal (system only)
-        };
-        const { donationId } = req.params;
-        let { status: tgt } = req.body;
-        console.log("Donation ID:", donationId, "Status:", tgt);
-        const donation = await Donation.findById(donationId);
-        if (!donation) {
-            return res.status(404).json({ success: false, message: 'Donation not found' });
-        }
-
-        // **AUTO-EXPIRE** if past expiryTime
-        if (donation.expiryTime && new Date(donation.expiryTime) < new Date() && donation.status !== 'EXPIRED') {
-            console.log("Donation has expired.");
-            donation.status = 'EXPIRED';
-            await donation.save();
-            return res.status(200).json({
-                success: true,
-                message: 'Donation has expired.',
-                donation,
-            });
-        }
-
-        // Manual change
-        if (!tgt) {
-            return res.status(400).json({ success: false, message: 'Must supply status' });
-        }
-        const newStatus = tgt.toUpperCase();
-        const cur = donation.status.toUpperCase();
-
-        if (cur === newStatus) {
-            return res.status(400).json({ success: false, message: `Already "${cur}".` });
-        }
-
-        const allowed = NEXT[cur] || [];
-        if (!allowed.includes(newStatus)) {
-            return res.status(400).json({
-                success: false,
-                scroll:false,
-                message: `Cannot transition from "${cur}" to "${newStatus}".`,
-            });
-        }
-        if(newStatus ==='CANCELLED' && cur ==='AVAILABLE'){
-            donation.status = newStatus;
-            console.log("recieved req")
-            await donation.save();
-            return res.status(200).json({
-                success: true,
-                scroll:true,
-                message: `DONATION CANCELLED`,
-            })
-        
-        }
-        if (newStatus ==='CANCELLED' && cur !=='AVAILABLE'){
-            return res.status(400).json({
-                success: false,
-                scroll:false,
-                message: `Cannot "${newStatus}" the Current Donation at this state.`,
-            })
-        }
-        if(newStatus === 'RESERVED' && cur === 'AVAILABLE') {
-            return res.status(400).json({
-                success: false,
-                scroll:true,
-                message: `Accept any applicants request to get the donation reserved`,
-            });
-        }
-        if(newStatus === 'IN_TRANSIT' && cur === 'RESERVED')
-        {
-            donation.status = newStatus;
-            const delivery = await Delivery.findById(donation.delivery);
-            if(delivery.volunteer === null || delivery.volunteer === undefined){
-                return res.status(400).json({
-                    success: false,
-                    scroll:false,
-                    message: `Volunteer is not Assigned to this delivery`,
-                });
-            }
-            if(delivery.status === 'ACCEPTED') 
-                delivery.status = 'PICKED_UP';
-            else if(delivery.status ==='PENDING'){
-                return res.status(400).json({
-                    success: false,
-                    scroll:false,
-                    message: `Delivery is not Accepted by any Volunteer`,
-                });
-            }
-            await donation.save();
-            console.log("Delivery:", delivery);
-            console.log("/n Donation:", donation);
-            await delivery.save();
-            // const newDeliver
-            return res.status(200).json({
-                success: true,
-                scroll:false,
-                message: `Status changed to ${newStatus}.`,
-                donation,
-            });
-        }
-        else if(newStatus === 'EXPIRED' && cur !== 'EXPIRED'){
-            
-        }
-            donation.status = newStatus;
-            await donation.save();
-
+      const NEXT = {
+        AVAILABLE: ['RESERVED', 'REJECTED', 'CANCELLED'],
+        RESERVED:  ['DELIVERED'],
+        DELIVERED: [],     // terminal
+        REJECTED:  [],     // terminal
+        CANCELLED: [],     // terminal
+        EXPIRED:   [],     // terminal (system only)
+      };
+  
+      const { donationId } = req.params;
+      let { status: tgt } = req.body;
+  
+      const donation = await Donation.findById(donationId);
+      if (!donation) {
+        return res.status(404).json({ success: false, message: 'Donation not found' });
+      }
+  
+      // auto-expire
+      if (
+        donation.expiryTime &&
+        new Date(donation.expiryTime) < new Date() &&
+        donation.status !== 'EXPIRED'
+      ) {
+        donation.status = 'EXPIRED';
+        await donation.save();
         return res.status(200).json({
-            success: true,
-            scroll:false,
-            message: `Status changed to ${newStatus}.`,
-            donation,
+          success: true,
+          message: 'Donation has expired.',
+          donation,
         });
+      }
+  
+      if (!tgt) {
+        return res.status(400).json({ success: false, message: 'Must supply status' });
+      }
+  
+      const newStatus = tgt.toUpperCase();
+      const cur = donation.status.toUpperCase();
+      if (cur === newStatus) {
+        return res.status(400).json({ success: false, message: `Already "${cur}".` });
+      }
+  
+      const allowed = NEXT[cur] || [];
+      if (!allowed.includes(newStatus)) {
+        return res.status(400).json({
+          success: false,
+          scroll: false,
+          message: `Cannot transition from "${cur}" to "${newStatus}".`,
+        });
+      }
+  
+      // CANCELLED only from AVAILABLE
+      if (newStatus === 'CANCELLED' && cur !== 'AVAILABLE') {
+        return res.status(400).json({
+          success: false,
+          scroll: false,
+          message: 'Can only Cancel when currently AVAILABLE.',
+        });
+      }
+  
+      // REJECTED only from AVAILABLE
+      if (newStatus === 'REJECTED' && cur !== 'AVAILABLE') {
+        return res.status(400).json({
+          success: false,
+          scroll: false,
+          message: 'Can only Reject when currently AVAILABLE.',
+        });
+      }
+  
+      // RESERVED only from AVAILABLE
+      if (newStatus === 'RESERVED' && cur !== 'AVAILABLE') {
+        return res.status(400).json({
+          success: false,
+          scroll: true,
+          message: 'Accept a request first to reserve the donation.',
+        });
+      }
+  
+      // DELIVERED only from RESERVED
+      if (newStatus === 'DELIVERED' && cur !== 'RESERVED') {
+        return res.status(400).json({
+          success: false,
+          scroll: false,
+          message: 'Can only mark Delivered when currently RESERVED.',
+        });
+      }
+  
+      // perform update
+      donation.status = newStatus;
+      await donation.save();
+  
+      return res.status(200).json({
+        success: true,
+        scroll: false,
+        message: `Status changed to ${newStatus}.`,
+        donation,
+      });
     } catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: 'Server error' });
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Server error' });
     }
-};
-
+  };
+  
 // controllers/donationController.js
 
 
