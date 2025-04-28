@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux';
 import Hero from '@/components/PageComponents/Hero';
 import HowItWorksSection from '@/components/PageComponents/HowItWorksSection';
 import DonationsList from '@/components/PageComponents/DonationsList';
-import OrganizationsList from '@/components/PageComponents/OrganizationsList';
-import TestimonialsList from '@/components/PageComponents/TestimonialsList';
+// import OrganizationsList from '@/components/PageComponents/OrganizationsList';
+// import TestimonialsList from '@/components/PageComponents/TestimonialsList';
 import CallToAction from '@/components/PageComponents/CallToAction';
 
 import useGetAllDonations from '@/hooks/useGetAllDonations';
@@ -27,10 +27,10 @@ const Home = () => {
           content="Connect with local organizations to donate surplus food or find resources for those in need."
         />
       </Helmet>
-        <div>
+        {/* <div>
         <script src="https://static.elfsight.com/platform/platform.js" async></script>
         <div class="elfsight-app-59c95c12-59a0-4e70-836e-a8b6ad2a1172" data-elfsight-app-lazy></div>
-        </div>
+        </div> */}
       <Hero />
       <HowItWorksSection />
 
@@ -71,7 +71,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-16 bg-neutral-100">
+      {/* <section className="py-16 bg-neutral-100">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-heading font-bold text-3xl md:text-4xl text-neutral-800 mb-4">
@@ -85,9 +85,9 @@ const Home = () => {
 
           <OrganizationsList limit={4} showViewAll={true} />
         </div>
-      </section>
+      </section> */}
 
-      <section className="py-16 bg-primary bg-opacity-5">
+      {/* <section className="py-16 bg-primary bg-opacity-5">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="font-heading font-bold text-3xl md:text-4xl text-neutral-800 mb-4">
@@ -100,7 +100,7 @@ const Home = () => {
 
           <TestimonialsList limit={3} />
         </div>
-      </section>
+      </section> */}
 
       <CallToAction />
     </>

@@ -3,7 +3,7 @@ import { PURGE } from 'redux-persist';
 
 const donationInitialState = {
   allDonations: [],
-  allUserDonations: [],
+  myDonations: [],
   singleDonation: null,
   loading: false,
 };
@@ -15,8 +15,8 @@ const donationSlice = createSlice({
     setAllDonations(state, action) {
       state.allDonations = action.payload;
     },
-    setAllUserDonations(state, action) {
-      state.allUserDonations = action.payload;
+    setMyDonations(state, action) {
+      state.myDonations = action.payload;
     },
     setSingleDonation(state, action) {
       state.singleDonation = action.payload;
@@ -32,7 +32,7 @@ const donationSlice = createSlice({
 
 export const {
   setAllDonations,
-  setAllUserDonations,
+  setMyDonations,
   setSingleDonation,
   setLoading,
 } = donationSlice.actions;

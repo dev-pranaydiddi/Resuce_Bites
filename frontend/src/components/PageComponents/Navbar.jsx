@@ -50,6 +50,7 @@ const Navbar = () => {
     : [
         { to: "/", label: "Home" },
         { to: "/donation", label: "Donations" },
+        { to: "/my/donation", label: "My Donations" },
         { to: "/how-it-works", label: "How It Works" },
         { to: "/about", label: "About Us" },
       ];

@@ -243,6 +243,7 @@ export const updateDeliveryStatus = asyncHandler(async (req, res) => {
   switch (newStatus) {
     case "PICKED_UP":
       donation.status = "IN_TRANSIT";
+      request.status  = "ON_THE_WAY_ORG";
       break;
     case "DELIVERED":
       donation.status = "DELIVERED";
@@ -256,7 +257,7 @@ export const updateDeliveryStatus = asyncHandler(async (req, res) => {
 
   // save both if modified
   const saves = [donation.save()];
-  if (newStatus === "DELIVERED") saves.push(request.save());
+  if (newStatus === "DELIVERED" || newStatus ==="PICKED_UP") saves.push(request.save());
   await Promise.all(saves);
 
   // 5) Return updated

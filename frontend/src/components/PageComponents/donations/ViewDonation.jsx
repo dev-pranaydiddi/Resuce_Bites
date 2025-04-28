@@ -56,6 +56,7 @@ export default function ViewDonation() {
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
 
+
   // if(user.user.role ==='DONOR')
   const { applicants, loading: applicantsLoading, error: applicantsError } =
     useGetApplicants(donationId);
@@ -66,7 +67,9 @@ export default function ViewDonation() {
       const res = await getDonation(donationId);
       if (!res.success) throw new Error(res.message);
       dispatch(setSingleDonation(res.donation));
-      setIsApplied(res.donation.requests?.some(r => r.applicant === user._id));
+      console.log(res.donation, "res.donation");
+      console.log(res.donation.requests?.some(r => r.applicant._id === user._id),"isApplied Value ");
+      setIsApplied(res.donation.requests?.some(r => r.applicant._id === user._id));
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -92,10 +95,12 @@ export default function ViewDonation() {
             { applicant: user._id }
           ]
         }));
-        navigate(`/request/${res.request._id}`);
+        console.log("isApplied",isApplied);
+        navigate(`/request`);
       }
       else{
         toast.error(res.response.data.message)
+        console.log("isApplied",isApplied);
       }
     } catch (err) {
       toast.error(err.message || "Failed to apply");
@@ -117,6 +122,7 @@ export default function ViewDonation() {
       if (res.data.success){
         toast.success(res.data.message);
         await fetchAndStore();
+        navigate('/my/donation')
       }else{
         toast.error(res.response.data.message)
       }

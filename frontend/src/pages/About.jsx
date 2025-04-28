@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Heart, Utensils, BarChart2, Globe } from "lucide-react";
-import TestimonialsList from "../components/PageComponents/TestimonialsList";
+// import TestimonialsList from "../components/PageComponents/TestimonialsList";
 import { Helmet } from "react-helmet";
 
 const About = () => {
@@ -180,12 +180,12 @@ const About = () => {
             </div>
 
             {/* Testimonials */}
-            <div className="mb-16">
+            {/* <div className="mb-16">
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-8 text-center">
                 What People Say About Us
               </h2>
               <TestimonialsList limit={3} />
-            </div>
+            </div> */}
 
             {/* Call to Action */}
             <div className="text-center">

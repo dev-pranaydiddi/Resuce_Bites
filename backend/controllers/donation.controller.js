@@ -50,8 +50,17 @@ export const createDonation = async (req, res) => {
 
 export const getDonationsByUser = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const donations = await User.findById(req.id).populate('donation').populate('delivery').populate('request');
+        const userId  = req.id;
+        // console.log("User ID:", userId)
+        const donations = await Donation.find({donor:userId}).populate('delivery').populate('requests').sort({createdAt:-1});
+        // console.log("Donations:", donations)
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.', success: false });
+        }
+        if(user.role!=='DONOR'){
+            return res.status(403).json({ message: 'You are not authorized to view donations', success: false });
+        }
         if (!donations || donations.length === 0) {
             return res.status(404).json({ message: 'No donations found at this time.', success: false });
         }

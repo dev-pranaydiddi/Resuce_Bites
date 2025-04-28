@@ -37,6 +37,7 @@ import AppliedRequests from "./components/PageComponents/requests/AppliedRequest
 import MyRequests from "./components/PageComponents/requests/myRequests";
 import AllDeliveries from "./components/PageComponents/deliveries/AllDeliveries";
 import MyDeliveries from "./components/PageComponents/deliveries/MyDeliveries";
+import MyDonations from "./components/PageComponents/donations/MyDonations";
 
 // Auth context
 export const AuthContext = createContext({
@@ -132,6 +133,14 @@ function Router() {
             element={
               <ProtectedRoute>
                 <DonatePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my/donation"
+            element={
+              <ProtectedRoute>
+                <MyDonations />
               </ProtectedRoute>
             }
           />
