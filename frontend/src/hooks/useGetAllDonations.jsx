@@ -14,7 +14,7 @@ export default function useGetAllDonations() {
     (async () => {
       try {
         const res = await getAllDonations();
-        console.log('response of res in view',res);
+        // console.log('response of res in view',res);
         if (mounted && res.success) {
           dispatch(setAllDonations(res.donations));
         }

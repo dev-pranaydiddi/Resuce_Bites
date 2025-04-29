@@ -7,7 +7,7 @@ export default function MyRequests() {
   // custom hook fetches & stores in Redux: { requests, loading, error }
   useGetAppliedRequests();
   const { appliedRequests } = useSelector((store) => store.request);
-  console.log("appliedRequests", appliedRequests);
+  // console.log("appliedRequests", appliedRequests);
   if (!appliedRequests) {
     return <p className="text-center py-8">You have no requests</p>;
   }

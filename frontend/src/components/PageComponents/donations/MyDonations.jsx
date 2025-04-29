@@ -32,10 +32,10 @@ export default function MyDonations() {
     dispatch(setDonationsLoading(true));
     try {
       const res = await axios.get(`${DONATION}/my`, { withCredentials: true });
-      console.log(res.data.donations);
+      // console.log(res.data.donations);
       if (res.data.success) {
         dispatch(setMyDonations(res.data.donations));
-        console.log(myDonations);
+        // console.log(myDonations);
       } else {
         toast.error(res.response.data.message);
       }

@@ -27,7 +27,7 @@ export default function MyDeliveries() {
     dispatch(setDeliveriesLoading(true));
     try {
       const res = await axios.get(`${DELIVERY}/my`, { withCredentials: true });
-      console.log(res);
+      // console.log(res);
       if (res.data.success) {
         dispatch(setMyDeliveries(res.data.deliveries));
       } else {

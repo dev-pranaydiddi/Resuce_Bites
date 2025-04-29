@@ -6,7 +6,7 @@ import { apiRequest } from "./apiClient";
 
 /** @param {object} userData*/
 export async function loginUser(userData) {
-  console.log("loginUser", userData)
+  // console.log("loginUser", userData)
   try{
   const res = await apiRequest("POST", `${USER}/login`, { userData})
       // console.log("loginUser", res)
@@ -20,7 +20,7 @@ export async function loginUser(userData) {
 
 /** @param {object} userData */
 export function registerUser(userData) {
-  console.log("registerUser", userData)
+  // console.log("registerUser", userData)
   return apiRequest("POST", `${USER}/register`, {userData})
     .then(res => res);
 }
@@ -59,7 +59,7 @@ export function getAllDonations() {
   return res;
 }
 catch (err) {
-  console.log("getAllDonations error", err);
+  // console.log("getAllDonations error", err);
   return err;
 }
 
@@ -73,7 +73,7 @@ export function getDonation(id) {
     return res;
   }
   catch (err) {
-    console.log("Edit Donation error", err);
+    // console.log("Edit Donation error", err);
     return err;
   }
 }
@@ -94,7 +94,7 @@ export async function createDonation(donationData , donorId) {
     return res;
 }
   catch (err) {
-    console.log("createDonation error", err);
+    // console.log("createDonation error", err);
     return err
   }
 }
@@ -104,11 +104,11 @@ export function updateDonation(id, donationData) {
   try{
     const res = apiRequest("PUT", `${DONATION}/${id}`);
 
-    console.log("Update Donation", res)
+    // console.log("Update Donation", res)
     return res;
   }
   catch (err) {
-    console.log("Edit Donation error", err);
+    // console.log("Edit Donation error", err);
     return err;
   }
 }
@@ -116,9 +116,9 @@ export function updateDonation(id, donationData) {
 export function updateDonationStatus(donationId,status){
  try{
    const res =  apiRequest("PUT", `${DONATION}/update/${donationId}/status`,status);
-   console.log("updateDonationStatus",status)
+  //  console.log("updateDonationStatus",status)
   }catch(err){
-    console.log("updateDonationStatus error", err);
+    // console.log("updateDonationStatus error", err);
     return err;
   }
 }
@@ -128,14 +128,15 @@ export function updateDonationStatus(donationId,status){
 /**   @param {string} donationId*/
 export function applyRequest(donationId) {
   try{
-    console.log("applyRequest", donationId)
-    console.log("applyRequest", `${REQUEST}/apply/${donationId}`)
+    // console.log("applyRequest", donationId)
+    // console.log("applyRequest", `${REQUEST}/apply/${donationId}`)
     const res = apiRequest("POST", `${REQUEST}/apply/${donationId}`,{donationId});
-    console.log("applyRequest response", res)
+    // console.log("applyRequest response", res)
     return res;
   }
   catch(err){
-    console.log(err)
+    // console.log(err)
+    return err;
   }
 
     // .then(res => res.json());
@@ -146,13 +147,13 @@ export function getAppliedRequests() {
   try{
   // console.log("getAppliedRequests", userId);
   // console.log("getAppliedRequests", `${REQUEST}/all`)
-  console.log("getAppliedRequests")
+  // console.log("getAppliedRequests")
   const res = apiRequest("GET", `${REQUEST}/all`)
-  console.log("getAppliedRequests response", res)
+  // console.log("getAppliedRequests response", res)
     return res;
 }
   catch(err){
-    console.log("getAppliedRequests error", err);
+    // console.log("getAppliedRequests error", err);
     return err;
   }
 }
@@ -160,12 +161,12 @@ export function getAppliedRequests() {
 /** @param {number} requestId @param {object} requestData */
 export function updateRequest(requestId, status) {
   try{
-    console.log("updateRequest", requestId, status);
+    // console.log("updateRequest", requestId, status);
     const res = apiRequest("PUT", `${REQUEST}/status/${requestId}/update`, status);
     return res
   }
   catch(err){
-    console.log("updateRequest error", err);
+    // console.log("updateRequest error", err);
     return err;
   }
 }
@@ -180,7 +181,7 @@ export function getApplicants(donationId) {
     return res;
   }
   catch(err){
-    console.log("getApplicants error", err);
+    // console.log("getApplicants error", err);
     return err;
   }
 }
@@ -198,11 +199,11 @@ export function getRequestsByOrganization(orgId) {
 export function getAllDeliveries(){
   try{
     const res = apiRequest("GET", `${DELIVERY}/all`)
-    console.log("getAllDeliveries", res)
+    // console.log("getAllDeliveries", res)
     return res;
   }
   catch(err){
-    console.log("getAllDeliveries error", err);
+    // console.log("getAllDeliveries error", err);
     return err;
   }
 }
@@ -211,11 +212,11 @@ export function getAllDeliveries(){
 export function createDelivery(deliveryData){
   try{
     const res = apiRequest("POST", `${DELIVERY}/new`, deliveryData)
-    console.log("createDelivery", res)
+    // console.log("createDelivery", res)
     return res;
   }
   catch(err){
-    console.log("createDelivery error", err);
+    // console.log("createDelivery error", err);
     return err;
   }
 }
@@ -224,11 +225,11 @@ export function createDelivery(deliveryData){
 export function acceptDelivery(deliveryId,status){
   try{
     const res = apiRequest("PUT", `${DELIVERY}/${deliveryId}/accept`,status)
-    console.log("acceptDelivery", res)
+    // console.log("acceptDelivery", res)
     return res;
   }
   catch(err){
-    console.log("acceptDelivery error", err);
+    // console.log("acceptDelivery error", err);
     return err;
   }
 
@@ -238,11 +239,11 @@ export function acceptDelivery(deliveryId,status){
 export function updateDeliveryStatus(deliveryId,status){
   try{
     const res = apiRequest("PUT", `${DELIVERY}/${deliveryId}/update`,status)
-    console.log("updateDeliveryStatus", res)
+    // console.log("updateDeliveryStatus", res)
     return res;
   }
   catch(err){
-    console.log("updateDeliveryStatus error", err);
+    // console.log("updateDeliveryStatus error", err);
     return err;
   }
 

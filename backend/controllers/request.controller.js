@@ -44,7 +44,7 @@ export const applyDonation = async (req,res)=>{
         }
         // check whether he is an existing applicant or not in the applicants array of donation
        const existingRequest= await Request.findOne({ donation: donation._id, applicant:userId });
-       console.log("Existing Request : ", existingRequest);
+      //  console.log("Existing Request : ", existingRequest);
         if(existingRequest && existingRequest != null){
             return res.status(400).json({message: 'You have already applied for this donation', success: false});
         }
@@ -83,7 +83,7 @@ export const applyDonation = async (req,res)=>{
 export const getAppliedDonations = async (req, res) => {
     try {
         const userId = req.id;
-        console.log("Donor Id : ", userId);
+        // console.log("Donor Id : ", userId);
         const user = await User.findById(userId);
         const requests = await Request.find({ applicant: userId }).sort({ createdAt: -1 }).populate({
             path: 'donation',
@@ -91,7 +91,7 @@ export const getAppliedDonations = async (req, res) => {
                 path: 'donor'
             }
         }).populate('applicant');
-        console.log(requests)
+        // console.log(requests)
         if (!requests || requests.length === 0) {
             return res.status(400).json({ message: 'You have no applied Donations', success: false });
         }

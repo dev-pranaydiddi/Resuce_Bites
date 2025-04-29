@@ -32,9 +32,9 @@ const Login = () => {
     e.preventDefault();
     dispatch(setLoading(true));
     try {
-      console.log("input", input);
+      // console.log("input", input);
       const res = await loginUser(input);
-      console.log("loginUser in login.jsx", res);
+      // console.log("loginUser in login.jsx", res);
       if (res?.success) {
         login(res.user);
         navigate("/");
@@ -42,7 +42,7 @@ const Login = () => {
         toast.error(res.response.data.message || "Login failed");
       }
     } catch (err) {
-      console.log("loginUser error", err);
+      // console.log("loginUser error", err);
       toast.error(
         err.response?.data?.message || "Something went wrong. Please try again."
       );
@@ -62,8 +62,8 @@ const Login = () => {
           <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
             <Heart className="h-7 w-7 text-red-600" />
           </div>
-          <h2 className="text-3xl font-extrabold">Already have an Account ?</h2>
-          <p className="text-gray-600">Course with the community.</p>
+          <h2 className="text-3xl font-extrabold text-red-600">Already have an Account ?</h2>
+          <p className="text-gray-600 text-red-800">Course with the community.</p>
         </div>
       <div className=" flex w-full justify-center items-center"> 
         <form
@@ -103,7 +103,7 @@ const Login = () => {
             </div>
           ) : (
             <div className="flex items-center justify-center">
-              <Button type="submit" className="md:w-2xs w-16 cursor-pointer my-4">
+              <Button type="submit" className="md:w-2xs w-16 cursor-pointer my-4 bg-red-600 text-white hover:bg-red-500">
                 Login
               </Button>
             </div>
@@ -111,7 +111,7 @@ const Login = () => {
 
           <span className="text-sm">
             Don't have an account?{" "}
-            <Link to="/register" className="text-blue-600">
+            <Link to="/register" className="text-red-600">
               Signup
             </Link>
           </span>

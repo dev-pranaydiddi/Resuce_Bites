@@ -15,7 +15,7 @@ const Footer = () => {
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Heart className="h-6 w-6 fill-white stroke-white text-white" />
               <div className="font-heading font-bold text-xl">
-                Food<span className="text-[hsl(var(--primary-light))]">Share</span>
+                Rescue<span className="text-[hsl(var(--primary-light))]">Bites</span>
               </div>
             </Link>
             <p className="text-neutral-300 mb-4">
@@ -47,7 +47,7 @@ const Footer = () => {
                 { to: '/', label: 'Home' },
                 { to: '/about', label: 'About Us' },
                 { to: '/how-it-works', label: 'How It Works' },
-                { to: '/donate', label: 'Donate Food' },
+                { to: '/donation', label: 'Donate Food' },
                 { to: '/request', label: 'Request Food' }
               ].map(({ to, label }) => (
                 <li key={to}>
@@ -59,7 +59,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div>
+          {/* <div>
             <h3 className="font-heading font-semibold text-lg mb-4">Resources</h3>
             <ul className="space-y-2">
               {[
@@ -76,14 +76,14 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">Contact Us</h3>
             <ul className="space-y-2 mb-4">
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 mr-3 mt-1" />
-                <span className="text-neutral-300">123 Main Street, City, State 12345</span>
+                <span className="text-neutral-300">Geetanjali College of Engineering and Technology</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-3" />
@@ -91,7 +91,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-3" />
-                <span className="text-neutral-300">info@foodshare.org</span>
+                <span className="text-neutral-300">rescuebites@gmaii.com</span>
               </li>
             </ul>
             <form className="flex">
@@ -111,7 +111,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-neutral-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-neutral-300 text-sm">&copy; {currentYear} FoodShare. All rights reserved.</p>
+          <p className="text-neutral-300 text-sm">&copy; {currentYear} RescueBites. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map(text => (
               <a key={text} href="#" className="text-neutral-300 hover:text-white transition-colors text-sm">

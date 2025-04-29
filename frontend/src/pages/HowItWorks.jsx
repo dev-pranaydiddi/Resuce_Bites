@@ -170,7 +170,7 @@ const HowItWorks = () => {
           </div>
 
           {/* CTA */}
-          <div className="mt-16 text-center">
+          {/* <div className="mt-16 text-center">
             <h3 className="text-xl font-semibold mb-4">Ready to Get Started?</h3>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/register">
@@ -182,7 +182,7 @@ const HowItWorks = () => {
                 </Button>
               </Link>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
     </>

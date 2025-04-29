@@ -61,7 +61,7 @@ const Navbar = () => {
         <Link to="/" className="flex items-center gap-2">
           <Heart className="h-8 w-8 fill-red-800 stroke-red-800 text-red-800" />
           <div className="font-heading font-bold text-2xl text-neutral-800">
-            Food<span className="text-primary">Share</span>
+            Rescue<span className="text-primary">Bites</span>
           </div>
         </Link>
 
@@ -81,22 +81,22 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <Link to="/dashboard">
+              {/* <Link to="/dashboard">
                 <Button variant="outline" className="rounded-full">
                   Dashboard
                 </Button>
-              </Link>
+              </Link> */}
               <Button
                 onClick={handleLogout}
-                variant="ghost"
-                className="rounded-full"
+      
+                className="rounded-md text-red-800 border border-red-800 bg-white hover:text-white hover:bg-red-800"
               >
                 Logout
               </Button>
             </div>
           ) : (
             <Link to="/login">
-              <Button className="rounded-full">Login</Button>
+              <Button className="rounded-md text-red-800 border border-red-800 bg-white hover:text-white hover:bg-red-800">Login</Button>
             </Link>
           )}
         </div>
@@ -130,22 +130,21 @@ const Navbar = () => {
 
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" onClick={closeMobileMenu}>
+                {/* <Link to="/dashboard" onClick={closeMobileMenu}>
                   <Button variant="outline" className="w-full rounded-full">
                     Dashboard
                   </Button>
-                </Link>
+                </Link> */}
                 <Button
                   onClick={handleLogout}
-                  variant="ghost"
-                  className="w-full rounded-full"
+                  className="rounded-md text-red-800 border border-red-800 bg-white hover:text-white hover:bg-red-800 w-full"
                 >
                   Logout
                 </Button>
               </>
             ) : (
               <Link to="/login" onClick={closeMobileMenu}>
-                <Button className="w-full rounded-full">Login</Button>
+                <Button className=" rounded-md text-red-800 border border-red-800 bg-white hover:text-white hover:bg-red-800 w-full">Login</Button>
               </Link>
             )}
           </div>

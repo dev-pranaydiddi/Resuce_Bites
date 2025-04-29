@@ -131,9 +131,9 @@ export const getDeliveries = async (req, res) => {
 export const acceptDelivery = async (req, res) => {
     try {
         const { deliveryId } = req.params;
-        console.log("Delivery ID:", deliveryId);
+        // console.log("Delivery ID:", deliveryId);
         const {status} = req.body;
-        console.log(status)
+        // console.log(status)
         const userId = req.id;
         const user = await User.findById(userId);
         if (!user) {
@@ -147,7 +147,7 @@ export const acceptDelivery = async (req, res) => {
         if (!delivery) {
             return res.status(404).json({ message: 'Delivery not found', success: false });
         }
-        console.log('reach')
+        // console.log('reach')
         if(status === 'ACCEPTED'){
             delivery.volunteer = req.id;
             delivery.status = status;

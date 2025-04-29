@@ -16,7 +16,7 @@ export default function useGetAppliedRequests() {
     (async () => {
       try {
         const res = await getAppliedRequests();
-        console.log("response of res in view", res);
+        // console.log("response of res in view", res);
         if (mounted && res.success) {
           dispatch(setAppliedRequests(res.requests));
         }

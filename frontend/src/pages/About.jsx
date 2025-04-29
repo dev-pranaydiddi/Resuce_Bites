@@ -9,19 +9,21 @@ const About = () => {
   return (
     <>
       <Helmet>
-        <title>About Us | FoodShare</title>
+        <div >
+        <title>About Us | RescueBites</title>
         <meta
           name="description"
-          content="Learn about FoodShare's mission to reduce food waste and fight hunger in our communities."
+          content="Learn about RescueBites's mission to reduce food waste and fight hunger in our communities."
         />
+        </div> 
       </Helmet>
 
       <div className="bg-gradient-to-r from-[hsl(var(--primary-light))] to-[hsl(var(--primary))] py-10 px-4">
         <div className="container mx-auto">
-          <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4">
-            About FoodShare
+          <h1 className="text-3xl md:text-4xl font-heading font-bold text-black mb-4">
+            About RescueBites
           </h1>
-          <p className="text-white text-lg max-w-2xl">
+          <p className="text-black text-lg max-w-2xl">
             Our mission, vision, and the story behind our food donation platform.
           </p>
         </div>
@@ -36,7 +38,7 @@ const About = () => {
                 Our Mission
               </h2>
               <p className="text-lg text-neutral-700 mb-6 leading-relaxed">
-                At FoodShare, we believe that no good food should go to waste while people go hungry. Our mission is to create a sustainable ecosystem where surplus food from businesses and individuals can efficiently reach those who need it most.
+                At RescueBites, we believe that no good food should go to waste while people go hungry. Our mission is to create a sustainable ecosystem where surplus food from businesses and individuals can efficiently reach those who need it most.
               </p>
               <p className="text-lg text-neutral-700 leading-relaxed">
                 We aim to reduce food waste, fight hunger, and build stronger communities by connecting food donors directly with organizations that serve vulnerable populations.
@@ -82,7 +84,7 @@ const About = () => {
                 </div>
               </div>
               <p className="text-lg text-neutral-700 leading-relaxed">
-                FoodShare bridges this gap by connecting those with surplus food directly to those who can distribute it to people in need, creating a more efficient and sustainable food ecosystem.
+              RescueBites bridges this gap by connecting those with surplus food directly to those who can distribute it to people in need, creating a more efficient and sustainable food ecosystem.
               </p>
             </div>
 
@@ -91,7 +93,7 @@ const About = () => {
               <h2 className="text-2xl md:text-3xl font-heading font-bold text-neutral-800 mb-6">
                 Our Impact
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+              {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-lg shadow-md text-center">
                   <div className="text-4xl font-bold text-[hsl(var(--primary))] mb-2">145,782</div>
                   <p className="text-neutral-700 font-heading uppercase tracking-wider text-sm">Meals Shared</p>
@@ -104,7 +106,7 @@ const About = () => {
                   <div className="text-4xl font-bold text-[hsl(var(--accent))] mb-2">287</div>
                   <p className="text-neutral-700 font-heading uppercase tracking-wider text-sm">Partner Organizations</p>
                 </div>
-              </div>
+              </div> */}
               <p className="text-lg text-neutral-700 leading-relaxed">
                 Since our founding, we've helped redistribute thousands of pounds of food that would otherwise go to waste. Every donation makes a difference in someone's life and helps create a more sustainable community.
               </p>
@@ -194,7 +196,7 @@ const About = () => {
                 Whether you're a business with surplus food, an organization serving those in need, or an individual looking to make a difference, you can be part of our mission to reduce waste and fight hunger.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/register">
+                {/* <Link to="/register">
                   <Button size="lg" className="px-8">
                     Join FoodShare
                   </Button>
@@ -203,7 +205,7 @@ const About = () => {
                   <Button size="lg" variant="outline" className="px-8">
                     How It Works
                   </Button>
-                </Link>
+                </Link> */}
               </div>
             </div>
           </div>

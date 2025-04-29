@@ -11,7 +11,7 @@ const DonationsList = ({ limit, showViewAll = false, filter}) => {
   const allDonations = useSelector((s) => s.donation.allDonations);
   const [searchTerm, setSearchTerm] = useState('');
   const reduxLoading = useSelector((s) => s.donation.loading);
-  console.log(reduxLoading)
+  // console.log(reduxLoading)
   useGetAllDonations();
   const[loading,setLoading] = useState(reduxLoading);
   // filter + search

@@ -69,7 +69,7 @@ export default function Register() {
   function encodeUrl({ street, city, state }) {
     const q = encodeURIComponent(`${street} ${city} ${state}`);
     const API_KEY = import.meta.env.VITE_GEOCODE_API_KEY;
-    console.log(`https://geocode.maps.co/search?q=${q}&api_key=${API_KEY}`);
+    // console.log(`https://geocode.maps.co/search?q=${q}&api_key=${API_KEY}`);
     return `https://geocode.maps.co/search?q=${q}&api_key=${API_KEY}`;
   }
 
@@ -171,7 +171,7 @@ export default function Register() {
     setIsLoading(true);
     try {
       const res = await registerUser(userData);
-      console.log(res);
+      // console.log(res);
       if (res.success) {
         login(res.user, res.organization);
         navigate("/dashboard");
@@ -195,8 +195,8 @@ export default function Register() {
           <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center">
             <Heart className="h-7 w-7 text-red-600" />
           </div>
-          <h2 className="text-3xl font-extrabold">Create an Account</h2>
-          <p className="text-gray-600">Join our community</p>
+          <h2 className="text-3xl font-extrabold text-red-600">Create an Account</h2>
+          <p className="text-red-800">Join our community</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 ">
@@ -448,7 +448,7 @@ export default function Register() {
         <p className="text-center text-sm">
           Already have an account?{" "}
           <Link to="/login" className="text-red-600 hover:underline">
-            Sign In
+            Login
           </Link>
         </p>
       </div>

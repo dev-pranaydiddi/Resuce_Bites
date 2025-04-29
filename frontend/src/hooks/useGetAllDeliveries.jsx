@@ -20,7 +20,7 @@ export default function useGetAllDeliveries() {
         }else{
           toast.error(res.response.data.message);
         }
-        console.log('Fetched deliveries:', res);
+        // console.log('Fetched deliveries:', res);
         if (mounted && res.success) {
           dispatch(setAllDeliveries(res.deliveries));
         }

@@ -67,8 +67,8 @@ export default function ViewDonation() {
       const res = await getDonation(donationId);
       if (!res.success) throw new Error(res.message);
       dispatch(setSingleDonation(res.donation));
-      console.log(res.donation, "res.donation");
-      console.log(res.donation.requests?.some(r => r.applicant._id === user._id),"isApplied Value ");
+      // console.log(res.donation, "res.donation");
+      // console.log(res.donation.requests?.some(r => r.applicant._id === user._id),"isApplied Value ");
       setIsApplied(res.donation.requests?.some(r => r.applicant._id === user._id));
     } catch (err) {
       toast.error(err.message);
@@ -95,12 +95,12 @@ export default function ViewDonation() {
             { applicant: user._id }
           ]
         }));
-        console.log("isApplied",isApplied);
+        // console.log("isApplied",isApplied);
         navigate(`/request`);
       }
       else{
         toast.error(res.response.data.message)
-        console.log("isApplied",isApplied);
+        // console.log("isApplied",isApplied);
       }
     } catch (err) {
       toast.error(err.message || "Failed to apply");
@@ -180,13 +180,13 @@ export default function ViewDonation() {
   // mark expired if past expiryTime
   const now = new Date();
   const isPastExpiry = expiryTime && new Date(expiryTime) < now;
-  console.log(new Date(expiryTime),now)
-  console.log('isPastExpiry', isPastExpiry)
+  // console.log(new Date(expiryTime),now)
+  // console.log('isPastExpiry', isPastExpiry)
   const showExpired = isPastExpiry && status !== 'EXPIRED';
   const showCancelled = status === 'CANCELLED';
 
   const options = NEXT[status.toUpperCase()] || [];
-  console.log('options',isRecipient && !showExpired && !showCancelled )
+  // console.log('options',isRecipient && !showExpired && !showCancelled )
 
   return (
     <div className="max-w-full h-screen flex flex-col items-center space-y-10 py-8">

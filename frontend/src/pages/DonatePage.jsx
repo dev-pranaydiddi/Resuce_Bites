@@ -201,11 +201,11 @@ export default function DonatePage() {
     }
     setIsSubmitting(true);
     try {
-      console.log("Submitting donation", user);
+      // console.log("Submitting donation", user);
       values.donorId = user.user._id;
-      console.log("values", values);
+      // console.log("values", values);
       const res = await createDonation(values,values.donorId);
-      console.log("res", res);
+      // console.log("res", res);
       if (res.success) {
       toast.success(res.message || "Donation created successfully");
       form.reset();

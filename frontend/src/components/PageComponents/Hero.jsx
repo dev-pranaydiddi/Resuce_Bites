@@ -40,7 +40,7 @@ const Hero = () => {
             <Link to="/donation">
               <Button
                 size="lg"
-                className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary-dark))] text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
+                className="bg-white text-black hover:bg-black hover:text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
               >
                 Request Food
               </Button>
@@ -69,8 +69,7 @@ const Hero = () => {
             <Link to="/donation">
               <Button
                 size="lg"
-                className="bg-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary-dark))] text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold"
-              >
+                className=" bg-white text-black hover:bg-black hover:text-white rounded-full shadow-lg text-lg px-8 py-6 h-auto font-heading font-semibold">
                 Request Food
               </Button>
             </Link>

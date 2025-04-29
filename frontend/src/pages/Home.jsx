@@ -21,7 +21,7 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>FoodShare - Connect, Donate, Nourish</title>
+        <title>RescueBites - Connect, Donate, Nourish</title>
         <meta
           name="description"
           content="Connect with local organizations to donate surplus food or find resources for those in need."
@@ -34,9 +34,9 @@ const Home = () => {
       <Hero />
       <HowItWorksSection />
 
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-10">
+      {/* <section className="py-16 bg-white">
+        <div className="container mx-auto px-4"> */}
+          {/* <div className="flex justify-between items-center mb-10">
             <h2 className="font-heading font-bold text-3xl text-neutral-800">
               Current Donations
             </h2>
@@ -59,17 +59,17 @@ const Home = () => {
                 <polyline points="12 5 19 12 12 19" />
               </svg>
             </Link>
-          </div>
+          </div> */}
 
           {/* Pass loading down if you want skeletons */}
-          <DonationsList
+          {/* <DonationsList
             limit={3}
             showViewAll={true}
             filter="AVAILABLE"
             loading={loading}
           />
         </div>
-      </section>
+      </section> */}
 
       {/* <section className="py-16 bg-neutral-100">
         <div className="container mx-auto px-4">
@@ -102,7 +102,7 @@ const Home = () => {
         </div>
       </section> */}
 
-      <CallToAction />
+      {/* <CallToAction /> */}
     </>
   );
 };
